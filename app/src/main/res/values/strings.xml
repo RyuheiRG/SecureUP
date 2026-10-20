@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">Secure UP</string>
+
+    <!-- Login (auth02-login) -->
+    <string name="login_title">Bienvenido</string>
+    <string name="login_subtitle">Ingresa tus credenciales para acceder a tu panel.</string>
+    <string name="login_email_label">Correo electrónico</string>
+    <string name="login_email_placeholder">usuario@correo.com</string>
+    <string name="login_password_label">Contraseña maestra</string>
+    <string name="login_submit">Iniciar sesión</string>
+    <string name="login_no_account">"¿No tienes cuenta? "</string>
+    <string name="login_create_account">Crear cuenta</string>
+    <string name="login_footer">Verificamos tu identidad para proteger tu información</string>
+    <!-- Se usará cuando se conecte la lógica de autenticación (paso 6). -->
+    <string name="login_error">Credenciales incorrectas. Intenta de nuevo.</string>
+
+    <!-- Campo de contraseña -->
+    <string name="password_show">Mostrar contraseña</string>
+    <string name="password_hide">Ocultar contraseña</string>
 </resources>

@@ -2,33 +2,85 @@ package com.secureup.app.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.secureup.app.R
 
-// Set of Material typography styles to start with
-val Typography = Typography(
+/**
+ * Tipografía Inter.
+ * REQUISITO: los archivos inter_regular.ttf, inter_medium.ttf, inter_semibold.ttf e
+ * inter_bold.ttf deben existir en app/src/main/res/font/ (nombres en minúsculas, sin guiones).
+ */
+val Inter = FontFamily(
+    Font(R.font.inter_regular, FontWeight.Normal),
+    Font(R.font.inter_medium, FontWeight.Medium),
+    Font(R.font.inter_semibold, FontWeight.SemiBold),
+    Font(R.font.inter_bold, FontWeight.Bold),
+)
+
+/**
+ * Escala definida en Figma (Design System -> Typography, nodo 4:72):
+ *   Display 28 / Bold      -> headlineLarge (line-height 36, letter-spacing -0.5)
+ *   Title 20 / Semi Bold   -> titleLarge    (line-height 28, letter-spacing -0.2)
+ *   Body 16 / Regular      -> bodyLarge     (line-height 24, letter-spacing 0)
+ *   Caption 12 / Regular   -> bodySmall     (line-height 16, letter-spacing 0.2)
+ * labelLarge: override visto en botones y campos del login (16 / line-height 20).
+ * labelMedium: etiqueta de los campos de texto (Medium 12 / line-height 16).
+ * El peso SemiBold de labelLarge sigue POR CONFIRMAR.
+ */
+val SecureUpTypography = Typography(
+    headlineLarge = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.Bold,
+        fontSize = 28.sp,
+        lineHeight = 36.sp,
+        letterSpacing = (-0.5).sp,
+    ),
+    titleLarge = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 20.sp,
+        lineHeight = 28.sp,
+        letterSpacing = (-0.2).sp,
+    ),
     bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = Inter,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    )
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
+        letterSpacing = 0.sp,
     ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
+    bodySmall = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    )
-    */
+        letterSpacing = 0.2.sp,
+    ),
+    labelLarge = TextStyle( // texto de botones y campos del login (override)
+        fontFamily = Inter,
+        fontWeight = FontWeight.SemiBold, // POR CONFIRMAR en Figma
+        fontSize = 16.sp,
+        lineHeight = 20.sp,
+    ),
+    labelMedium = TextStyle( // etiqueta arriba de los campos de texto
+        fontFamily = Inter,
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+    ),
+)
+
+/**
+ * Texto dentro de los campos de entrada.
+ * Figma (login, nodo 87:216): 16 / line-height 20 Regular, un override del Body 16/24.
+ * Se separa de `bodyLarge` para respetar el alto exacto del campo (padding 14 + línea 20).
+ */
+val FieldTextStyle = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.Normal,
+    fontSize = 16.sp,
+    lineHeight = 20.sp,
 )

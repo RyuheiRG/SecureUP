@@ -1,66 +1,29 @@
 package com.secureup.app.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
-private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryDark,
-    onPrimary = OnPrimaryDark,
-    primaryContainer = PrimaryContainerDark,
-    onPrimaryContainer = OnPrimaryContainerDark,
-    secondary = SecondaryDark,
-    onSecondary = OnSecondaryDark,
-    secondaryContainer = SecondaryContainerDark,
-    onSecondaryContainer = OnSecondaryContainerDark,
-    tertiary = TertiaryDark,
-    onTertiary = OnTertiaryDark,
-    tertiaryContainer = TertiaryContainerDark,
-    onTertiaryContainer = OnTertiaryContainerDark,
-    error = ErrorDark,
-    onError = OnErrorDark,
-    background = BackgroundDark,
-    onBackground = OnBackgroundDark,
-    surface = SurfaceDark,
-    onSurface = OnSurfaceDark
+private val SecureUpColorScheme = darkColorScheme(
+    primary = SecureUpColors.Primary,
+    onPrimary = SecureUpColors.OnPrimary,
+    background = SecureUpColors.Background,
+    onBackground = SecureUpColors.TextPrimary,
+    surface = SecureUpColors.Surface,
+    onSurface = SecureUpColors.TextPrimary,
+    surfaceVariant = SecureUpColors.SurfaceVariant,
+    onSurfaceVariant = SecureUpColors.TextSecondary,
+    error = SecureUpColors.Danger,
+    onError = SecureUpColors.OnPrimary,
+    outline = SecureUpColors.Outline,
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = PrimaryLight,
-    onPrimary = OnPrimaryLight,
-    primaryContainer = PrimaryContainerLight,
-    onPrimaryContainer = OnPrimaryContainerLight,
-    secondary = SecondaryLight,
-    onSecondary = OnSecondaryLight,
-    secondaryContainer = SecondaryContainerLight,
-    onSecondaryContainer = OnSecondaryContainerLight,
-    tertiary = TertiaryLight,
-    onTertiary = OnTertiaryLight,
-    tertiaryContainer = TertiaryContainerLight,
-    onTertiaryContainer = OnTertiaryContainerLight,
-    error = ErrorLight,
-    onError = OnErrorLight,
-    background = BackgroundLight,
-    onBackground = OnBackgroundLight,
-    surface = SurfaceLight,
-    onSurface = OnSurfaceLight
-)
-
-/**
- * Tema de la app: envuelve toda la UI para aplicar la paleta SecureUP.
- * Se elige claro/oscuro según la configuración del sistema (isSystemInDarkTheme).
- * Sin "dynamic color": así la identidad visual es la misma en todos los dispositivos.
- */
+/** La app es solo tema oscuro (así está diseñada). No usa color dinámico ni sigue el tema del sistema. */
 @Composable
-fun SecureUPTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
+fun SecureUPTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
-        typography = Typography,
-        content = content
+        colorScheme = SecureUpColorScheme,
+        typography = SecureUpTypography,
+        content = content,
     )
 }
