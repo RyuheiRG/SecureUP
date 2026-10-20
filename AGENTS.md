@@ -12,7 +12,7 @@ Tres módulos bajo una sola cuenta:
 2. **Escáner QR**: lee un QR con la cámara, muestra la URL y la verifica contra un servicio de reputación antes de permitir abrirla.
 3. **Perfil**: ver cuenta, cerrar sesión, cambiar contraseña maestra, eliminar cuenta.
 
-Pantallas: Login/Registro, Dashboard (Security Score), Vault (lista, detalle, nueva entrada), Escáner, Resultado de escaneo, Historial, Perfil. Navegación inferior: Inicio, Vault, Escáner, Perfil.
+Pantallas (20 frames en Figma): Splash, Onboarding (2), Registro, Login, Desbloqueo, Dashboard (Security Score), Bóveda (lista, detalle, nueva credencial), Verificador de brechas (+ resultados), Escáner QR (+ resultados, historial), Perfil (+ cerrar sesión, cambiar contraseña maestra). Navegación inferior: Inicio, Bóveda, Escáner, Perfil. El detalle de cada pantalla está en `DESIGN.md`.
 
 ## 2. Stack y versiones
 
@@ -52,6 +52,7 @@ Patrón: **View (Compose) → ViewModel → Repository → fuentes de datos (Roo
 com.secureup.app/
 ├── ui/
 │   ├── screens/        # LoginScreen.kt, DashboardScreen.kt, ...
+│   ├── components/     # SecureUpButton, SecureUpTextField, CredentialCard, StatusBadge, ...
 │   ├── navigation/     # NavHost y rutas
 │   └── theme/
 ├── viewmodel/          # AuthViewModel, VaultViewModel, ScannerViewModel
@@ -63,9 +64,21 @@ com.secureup.app/
 └── model/              # modelos de dominio (Usuario, VaultEntry, ScanResult)
 ```
 
+## 4.1 Diseño (fuente de verdad: `DESIGN.md`)
+
+- La interfaz sigue el diseño de Figma, resumido en `DESIGN.md` (tokens, componentes, inventario de pantallas). **No inventes estilos, colores ni textos.** Si `DESIGN.md` no cubre algo o lo marca "POR CONFIRMAR", pregúntame.
+- Los tokens viven en `ui/theme` (`Color.kt`, `Type.kt`, `Dimens.kt`, `Theme.kt`). Prohibido usar hex o tamaños sueltos en pantallas.
+- Las pantallas componen componentes de `ui/components/`; no definen estilos propios.
+- Textos de interfaz en español dentro de `strings.xml`. Código en inglés.
+- Los frames de Figma repiten prefijos (hay tres pares con el mismo código, p. ej. "A06"): refiérete a ellos por **nombre completo**.
+- La sección "Pendientes de decisión" de `DESIGN.md` lista puntos sin resolver. No los implementes hasta que yo los resuelva.
+- Si el servidor MCP de Figma está conectado, úsalo **solo para leer valores exactos de un frame concreto** (radios, estados). No regeneres pantallas a partir de él.
+- El MCP de Figma es de solo lectura. Nunca uses herramientas que escriban o modifiquen el archivo de Figma.
+- Íconos: se importan como Vector Asset (XML en res/drawable/, prefijo ic_) desde el SVG exportado de Figma. No agregues material-icons-extended ni otras librerías de íconos.
+
 ## 5. Alcance (no te pases de aquí)
 
-Dentro del alcance: registro/login, CRUD de entradas del vault cifradas, verificación de brecha, escaneo de QR + verificación de URL, historial de escaneos, perfil (logout, cambiar contraseña maestra, eliminar cuenta).
+Dentro del alcance: registro/login, CRUD de entradas del vault cifradas, verificación de brecha, escaneo de QR + verificación de URL, historial de escaneos, perfil (logout, cambiar contraseña maestra). Eliminar cuenta está **pendiente**: no existe en el diseño.
 
 **Fuera del alcance** (no lo implementes ni lo propongas como trabajo actual): sincronización en tiempo real entre dispositivos, desbloqueo biométrico, moderación, notificaciones push, iOS, cualquier "mejora" no pedida. El respaldo/restauración del vault es **manual**.
 
@@ -93,7 +106,7 @@ Dentro del alcance: registro/login, CRUD de entradas del vault cifradas, verific
 - Cambiar contraseña maestra: descifrar todo con la clave vieja, re-cifrar todo con la nueva, subir el vault completo en **una sola operación atómica**.
 
 **Endpoints previstos (backend)**
-`POST /api/auth/register` · `GET /api/auth/salt?email=` · `POST /api/auth/login` · `GET|POST|PUT|DELETE /api/vault` · `POST /api/breach-check` · `POST /api/qr-check` · `DELETE /api/account`
+`POST /api/auth/register` · `GET /api/auth/salt?email=` · `POST /api/auth/login` · `GET|POST|PUT|DELETE /api/vault` · `POST /api/breach-check` · `POST /api/qr-check` · `DELETE /api/account` (pendiente)
 Autenticación con JWT de vida corta en header `Authorization: Bearer`.
 
 **Tablas (backend)**: `usuarios` (id UUID, email único, auth_hash, salt_auth, salt_vault), `vault_entries` (id, user_id, ciphertext, nonce, timestamps), `scan_history` (id, user_id, url, veredicto, scanned_at). FK con `ON DELETE CASCADE`.
@@ -104,7 +117,7 @@ Autenticación con JWT de vida corta en header `Authorization: Bearer`.
 
 ## 8. Orden de implementación (no saltes pasos)
 
-1. Reorganizar paquetes y dejar el tema listo.
+1. Reorganizar paquetes; agregar la fuente Inter (`res/font/`) y los tokens de `DESIGN.md` en `ui/theme`; crear los componentes base en `ui/components/`.
 2. UI de Login/Registro + `AuthViewModel` con `UiState`, usando un repositorio **falso** (sin red).
 3. Navegación (Compose Navigation): Login → Dashboard con barra inferior.
 4. `CryptoManager` (PBKDF2 + AES-GCM) **con pruebas unitarias**: cifrar→descifrar, nonce distinto por operación, fallo al alterar un byte del ciphertext.
@@ -119,6 +132,8 @@ Marca aquí el paso en el que vamos: **Paso actual: 1**
 ## 9. Documentación oficial (consultar antes de usar una API)
 
 - Kotlin: https://kotlinlang.org/docs/home.html
+- Fuente Inter (Google Fonts): https://fonts.google.com/specimen/Inter
+- Figma MCP server (opcional): https://help.figma.com/hc/en-us/articles/32132100833559-Guide-to-the-Dev-Mode-MCP-Server
 - Compose: https://developer.android.com/develop/ui/compose
 - Material 3 en Compose: https://developer.android.com/develop/ui/compose/designsystems/material3
 - Compose Navigation: https://developer.android.com/develop/ui/compose/navigation
