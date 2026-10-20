@@ -43,7 +43,8 @@ Lo que no está aquí o está marcado **POR CONFIRMAR** no se inventa: se pregun
 
 Line-heights y letter-spacing: **confirmados en Figma** (Typography, nodo `4:72`).
 `labelLarge` (16 / 20) es el override visto en botones y campos del login; el peso SemiBold sigue **POR CONFIRMAR**.
-Archivos requeridos: `res/font/inter_regular.ttf`, `inter_semibold.ttf`, `inter_bold.ttf`.
+Archivos requeridos: `res/font/inter_regular.ttf`, `inter_medium.ttf`, `inter_semibold.ttf`, `inter_bold.ttf`.
+- **Licencia:** Inter se distribuye bajo **SIL Open Font License 1.1 (SIL OFL)**. El texto de la licencia está en `licenses/OFL-Inter.txt`.
 
 ### Espaciado (confirmado): 4, 8, 12, 16, 24, 32 dp → `Spacing.Xs/S/M/L/Xl/Xxl`
 
