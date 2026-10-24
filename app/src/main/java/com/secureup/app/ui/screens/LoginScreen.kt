@@ -30,7 +30,7 @@ import com.secureup.app.ui.theme.Spacing
  * Solo pinta estado y emite eventos: todavía no hay lógica de negocio (AuthViewModel, paso 6).
  */
 @Composable
-fun LoginScreen() {
+fun LoginScreen(onRegisterClick: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
