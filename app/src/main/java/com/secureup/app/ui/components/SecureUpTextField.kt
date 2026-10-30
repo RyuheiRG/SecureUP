@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +35,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -63,6 +67,8 @@ private val ErrorIconSize = 16.dp
  *
  * @param placeholder texto de ayuda que se muestra cuando el campo está vacío (extra, no estaba
  *        en la firma original, pero el diseño de login lo usa).
+ * @param keyboardOptions configuración del teclado (tipo, acción). Permite encadenar campos.
+ * @param keyboardActions qué hacer con la acción del teclado (Siguiente, Listo…).
  * @param interactionSource permite simular el estado "focused" en los @Preview.
  */
 @Composable
@@ -74,6 +80,8 @@ fun SecureUpTextField(
     isPassword: Boolean = false,
     errorMessage: String? = null,
     placeholder: String? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
@@ -123,10 +131,17 @@ fun SecureUpTextField(
                 BasicTextField(
                     value = value,
                     onValueChange = onValueChange,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics {
+                            // TalkBack anuncia el campo como "no válido" con este mensaje.
+                            if (errorText != null) this.error(errorText)
+                        },
                     singleLine = true,
                     textStyle = FieldTextStyle.copy(color = SecureUpColors.TextPrimary),
                     cursorBrush = SolidColor(SecureUpColors.Primary),
+                    keyboardOptions = keyboardOptions,
+                    keyboardActions = keyboardActions,
                     interactionSource = interactionSource,
                     visualTransformation = if (isPassword && !passwordVisible) {
                         PasswordVisualTransformation()

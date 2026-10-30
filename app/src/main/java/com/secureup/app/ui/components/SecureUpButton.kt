@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -94,6 +95,7 @@ fun SecureUpButton(
                 interactionSource = interactionSource,
                 indication = null, // el feedback de "pressed" es la opacidad, no un ripple
                 enabled = enabled,
+                role = Role.Button, // TalkBack lo anuncia como botón, no como texto pulsable
                 onClick = onClick,
             )
             .padding(horizontal = Spacing.Xl, vertical = ButtonVerticalPadding),
