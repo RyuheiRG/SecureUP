@@ -66,7 +66,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = Spacing.Xl, vertical = Spacing.L),
+                .padding(horizontal = Spacing.L, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.L),
         ) {
             // Tarjeta principal: Security Score
