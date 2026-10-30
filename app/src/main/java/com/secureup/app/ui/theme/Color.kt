@@ -18,6 +18,10 @@ object SecureUpColors {
     val Danger = Color(0xFFFF5C6C)
     val TextPrimary = Color(0xFFE8EAF0)
     val TextSecondary = Color(0xFF9AA3B5)
+    // Tarjeta de brechas del Inicio (Figma 62:233). Son colores sólidos del diseño,
+    // no Danger con opacidad: así el valor se lee igual sobre cualquier fondo.
+    val DangerSurface = Color(0xFF2A1418)
+    val DangerMuted = Color(0xFFC47580)
     // Borde del botón secundario. En Figma es un hex literal (no está ligado a una variable).
     val Outline = Color(0xFF4D5973)
 }
