@@ -116,13 +116,13 @@ fun ScoreRing(
 }
 
 /**
- * Color del anillo según el avance. **PROVISIONAL**: los cortes no están confirmados en Figma;
- * en el diseño 78/100 se pinta con Primary.
+ * Color del anillo según el avance (DESIGN.md, pendiente 1):
+ *   >= 70 % -> Success (verde) | >= 40 % -> Warning (ámbar) | < 40 % -> Danger (rojo)
+ * El puntaje se calcula solo con la fortaleza de las contraseñas guardadas.
  */
 private fun ringColorFor(progress: Float): Color = when {
-    progress >= 0.8f -> SecureUpColors.Success
-    progress >= 0.5f -> SecureUpColors.Primary
-    progress >= 0.3f -> SecureUpColors.Warning
+    progress >= 0.7f -> SecureUpColors.Success
+    progress >= 0.4f -> SecureUpColors.Warning
     else -> SecureUpColors.Danger
 }
 
@@ -132,8 +132,8 @@ private fun ScoreRingPreview() {
     SecureUPTheme {
         Column {
             ScoreRing(score = 78)
-            ScoreRing(score = 42)
-            ScoreRing(score = 15)
+            ScoreRing(score = 55)
+            ScoreRing(score = 25)
         }
     }
 }
