@@ -28,6 +28,8 @@ Lo que no está aquí o está marcado **POR CONFIRMAR** no se inventa: se pregun
 | Danger | `#FF5C6C` | Peligroso / error / acción destructiva |
 | TextPrimary | `#E8EAF0` | Texto principal |
 | TextSecondary | `#9AA3B5` | Texto secundario, etiquetas, placeholders |
+| DangerSurface | `#2A1418` | Fondo de la tarjeta de brechas (`62:233`). Es un hex sólido del diseño, **no** `Danger` con opacidad |
+| DangerMuted | `#C47580` | Etiqueta sobre `DangerSurface` (`62:233`) |
 | Outline | `#4D5973` | Borde del botón secundario (en Figma es un hex literal, **sin variable**) |
 
 ### Tipografía: Inter (confirmado en Figma)
@@ -39,6 +41,8 @@ Lo que no está aquí o está marcado **POR CONFIRMAR** no se inventa: se pregun
 | Body | `bodyLarge` | 16 / Regular | 24 | 0 |
 | Caption | `bodySmall` | 12 / Regular | 16 | 0.2 |
 | Etiqueta de campo | `labelMedium` | 12 / Medium | 16 | — |
+| Valor de estadística (Inicio) | `StatValueTextStyle` | 16 / SemiBold | 24 | — |
+| Texto de acceso rápido (Inicio) | `ActionLabelTextStyle` | 14 / Medium | automático (`normal` en Figma) | — |
 | (botones y campos) | `labelLarge` | 16 / SemiBold — **POR CONFIRMAR** (peso) | 20 | — |
 
 Line-heights y letter-spacing: **confirmados en Figma** (Typography, nodo `4:72`).
@@ -59,6 +63,8 @@ Archivos requeridos: `res/font/inter_regular.ttf`, `inter_medium.ttf`, `inter_se
 | padding vertical 40 (tarjeta del score, `62:221`) | `Spacing.Xxl` | 32 |
 | gap 20 (etiqueta → anillo del score) | `Spacing.Xl` | 24 |
 
+**Excepciones que sí quedan como literal:** 6 dp en dos lugares (separación etiqueta-campo en `SecureUpTextField` y separación ícono-texto en `QuickActionButton`) y 14 dp de padding en los avisos Danger. Se mantienen porque bajar a 4 o subir a 8 cambia la proporción que muestra Figma.
+
 ### Márgenes y padding (regla global)
 
 Ninguna pantalla define márgenes propios. **El margen lateral depende del tipo de pantalla**, según Figma:
@@ -71,6 +77,7 @@ Ninguna pantalla define márgenes propios. **El margen lateral depende del tipo 
 | Padding interno de tarjetas de estadísticas (Contraseñas, Brechas) | 16 | `Spacing.L` | `62:230` |
 | Padding interno de la tarjeta destacada (Security Score) | 24 horizontal / 32 vertical | `Spacing.Xl` / `Spacing.Xxl` | `62:221` (40 vertical ajustado) |
 | Separación entre botones de una fila | 12 | `Spacing.M` | `62:238` |
+| Separación entre las dos tarjetas de estadísticas | 12 | `Spacing.M` | `62:229` (gap 12) |
 
 ### Radios (`Dimens.kt`): controles (botones y campos) **12 dp** (confirmado en Figma); tarjetas y avisos **16 dp** (confirmado en el aviso Danger `87:197`); badges en píldora.
 
@@ -81,6 +88,8 @@ Ninguna pantalla define márgenes propios. **El margen lateral depende del tipo 
 | `SecureUpButton` | Primary (relleno azul), Secondary (fondo SurfaceVariant, borde `Outline` `#4D5973`), Danger (relleno rojo); cada uno con 3 estados: normal, pressed, disabled | Texto oscuro (`OnPrimary`) sobre Primary y Danger. Secondary: borde `Outline` y estados por **opacidad** → Default 100 %, Pressed 80 %, Disabled 40 % (confirmado en Figma). Primary y Danger: **CONFIRMADOS** con los mismos estados por opacidad → Pressed 80 %, Disabled 40 %. Ancho completo en la mayoría de pantallas. |
 | `SecureUpTextField` | Normal, enfocado (borde Primary), error (borde Danger + mensaje con ícono de alerta), con ícono de ojo (mostrar/ocultar) | Etiqueta arriba del campo (TextSecondary, 12). Campos de contraseña con `PasswordVisualTransformation` y toggle del ojo (área táctil 48 dp, ícono visual 20 dp). Espécimen detallado abajo. |
 | `InfoBanner` | Warning (ámbar) y Danger (rojo) | Aviso con `ic_alert_triangle`; el tint cambia por variante (`Warning` / `Danger`). Contenedor, radio, padding y texto distintos por variante. Espécimen abajo. |
+| `StatCard` | Neutral (Contraseñas) y Danger (Brechas) | Etiqueta `bodySmall` arriba y valor `StatValueTextStyle` abajo, con 8 dp entre ambos. Radio 16, padding 16, ancho completo. Neutral: fondo `SurfaceVariant` y valor `Primary`. Danger: fondo `DangerSurface`, etiqueta `DangerMuted` y valor `Danger` (Figma `62:230`, `62:233`). |
+| `QuickActionButton` | Sin ícono ("+ Nueva entrada") y con ícono ("Escanear QR") | Fondo `SurfaceVariant`, radio 12, alto mínimo 64 dp, padding 16 horizontal / 12 vertical. Texto `ActionLabelTextStyle` en `Primary`; ícono decorativo de 14 dp (`contentDescription = null`) con 6 dp de separación. Fila con 12 dp entre botones (Figma `62:238`). |
 | `CredentialCard` | Avatar circular (placeholder), título (sitio), subtítulo (usuario), punto de estado a la derecha | Punto verde / ámbar / rojo según estado de la credencial (ver pendiente 2). |
 | `StatusBadge` | Seguro (verde), Sospechoso (ámbar), Peligroso (rojo) | Píldora con punto y texto oscuro. |
 | `PasswordStrengthBar` | 4 segmentos + etiqueta: Weak (1 rojo), Fair (2 ámbar), Good (3 azul), Strong (4 verde) | Segmentos inactivos en SurfaceVariant. Etiquetas en inglés en Figma: **confirmar idioma**. |

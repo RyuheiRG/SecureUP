@@ -95,6 +95,29 @@ val SecureUpTypography = Typography(
 )
 
 /**
+ * Valor de las tarjetas de estadísticas del Inicio (Contraseñas, Brechas).
+ * Figma (nodos 62:232 y 62:234): Inter SemiBold 16 / line-height 24.
+ * No se usa `titleLarge` (20/28) porque el diseño baja a 16 para caber en la tarjeta.
+ */
+val StatValueTextStyle = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 16.sp,
+    lineHeight = 24.sp,
+)
+
+/**
+ * Texto de los accesos rápidos del Inicio (botones "+ Nueva entrada" y "Escanear QR").
+ * Figma (nodos 62:240 y 62:243): Inter Medium 14 con line-height automático (`normal`),
+ * por eso no se fija `lineHeight`: Compose usa las métricas de la fuente.
+ */
+val ActionLabelTextStyle = TextStyle(
+    fontFamily = Inter,
+    fontWeight = FontWeight.Medium,
+    fontSize = 14.sp,
+)
+
+/**
  * Texto dentro de los campos de entrada.
  * Figma (login, nodo 87:216): 16 / line-height 20 Regular, un override del Body 16/24.
  * Se separa de `bodyLarge` para respetar el alto exacto del campo (padding 14 + línea 20).
