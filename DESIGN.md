@@ -56,6 +56,21 @@ Archivos requeridos: `res/font/inter_regular.ttf`, `inter_medium.ttf`, `inter_se
 | gap 28 | `Spacing.Xl` | 24 |
 | padding vertical 40 (registro) | `Spacing.Xxl` | 32 |
 | gap 20 (registro) | `Spacing.Xl` | 24 |
+| padding vertical 40 (tarjeta del score, `62:221`) | `Spacing.Xxl` | 32 |
+| gap 20 (etiqueta → anillo del score) | `Spacing.Xl` | 24 |
+
+### Márgenes y padding (regla global)
+
+Ninguna pantalla define márgenes propios: se usan estas medidas para que el ritmo vertical y horizontal sea igual en toda la app.
+
+| Contexto | Valor | Token |
+|---|---|---|
+| Padding horizontal de pantalla (borde izquierdo/derecho del contenido) | 16 | `Spacing.L` |
+| Separación entre bloques de una pantalla | 16 | `Spacing.L` |
+| Padding interno de tarjetas de estadísticas (Contraseñas, Brechas) | 16 | `Spacing.L` |
+| Padding interno de la tarjeta destacada (Security Score) | 24 horizontal / 32 vertical | `Spacing.Xl` / `Spacing.Xxl` |
+| Separación entre la tarjeta del score y el bloque siguiente | 16 | `Spacing.L` |
+| Separación entre botones de una fila | 12 | `Spacing.M` |
 
 ### Radios (`Dimens.kt`): controles (botones y campos) **12 dp** (confirmado en Figma); tarjetas y avisos **16 dp** (confirmado en el aviso Danger `87:197`); badges en píldora.
 
@@ -72,7 +87,7 @@ Archivos requeridos: `res/font/inter_regular.ttf`, `inter_medium.ttf`, `inter_se
 | `SecureUpTopBar` | Título alineado a la izquierda, fondo Surface | Capa "Top App Bar" en Figma. |
 | `SecureUpBottomBar` | 4 destinos: Inicio, Bóveda, Escáner, Perfil. Activo = Primary con punto indicador sobre el ícono | Capa "Bottom Navigation". En Figma una etiqueta dice "Boveda" sin tilde: corregir. Se muestra en todas las pantallas **excepto** splash, onboarding, registro, login y desbloqueo. |
 | `ConfirmDialog` | Título, texto, botón Cancelar (secundario) + acción (danger) | Ejemplo: "¿Cerrar sesión?". Fondo atenuado detrás. |
-| `ScoreRing` | Anillo con "78 / 100" al centro, color Primary | Cómo representa el avance (anillo en 4 arcos): **POR CONFIRMAR**. |
+| `ScoreRing` | Anillo continuo de 160 dp con banda de 12 dp y el puntaje al centro | Un solo arco (no 4 segmentos): avanza 360° × score, empieza arriba y crece en sentido horario, punta redondeada. Interior relleno con el token Background. Color por rango: ≥ 70 % Success (verde), ≥ 40 % Warning (ámbar), < 40 % Danger (rojo) — **sin azul**. Número en Inter Bold 48/58 y "/ 100" en `bodySmall`, sin separación entre ambos. Medidas confirmadas en Figma (`62:221`, `62:223`). |
 | FAB | Botón circular Primary con "+" | Solo en la lista de la Bóveda. |
 
 ### Espécimen: `SecureUpTextField` (Figma `87:216`; error `87:220`)
@@ -155,7 +170,7 @@ Las tres variantes de resultado (brecha y QR) son **una sola pantalla** que camb
 
 ## 6. Pendientes de decisión (no implementar hasta resolverlos)
 
-1. **Fórmula del Security Score.** El diseño muestra "78 / 100" sin criterio. Definir una fórmula determinista (p. ej. proporción de credenciales fuertes, sin brecha y sin reutilización).
+1. **Fórmula del Security Score.** *Criterio resuelto (2026-10-29): el score depende **solo de la fortaleza** de las contraseñas guardadas, no de las brechas (esas ya se muestran aparte).* Falta la fórmula exacta que convierte la fortaleza en 0-100: se define en el paso 5 (Vault).
 2. **Estado de una credencial.** La Bóveda usa punto verde/ámbar/rojo; los badges dicen Seguro/Sospechoso/Peligroso. Para contraseñas, definir qué significa cada color (propuesta: rojo = aparece en brecha, ámbar = débil o repetida, verde = fuerte y sin brecha).
 3. **Intentos fallidos en Desbloqueo** ("3 intentos restantes"). No está definido qué pasa al llegar a 0. Un contador solo en la app no protege (la protección real es el costo del KDF); decidir entre retardo creciente o cierre de sesión, y dónde se persiste el contador. Evitar borrar datos.
 4. **Eliminar cuenta**: está en el alcance técnico pero **no existe en el diseño** del Perfil. Diseñarla o sacarla del alcance.
@@ -165,5 +180,5 @@ Las tres variantes de resultado (brecha y QR) son **una sola pantalla** que camb
 8. **Texto "Dominio verificado"** en resultado seguro: sobreafirma. Que no haya coincidencias en listas no verifica nada. Sugerencia: "Sin amenazas conocidas".
 9. **Cambiar contraseña maestra:** el medidor de fortaleza aparece bajo la contraseña **actual**; debería estar bajo la **nueva**.
 10. **Navegación del verificador de brechas.** Hay un verificador independiente (contraseña escrita a mano) y un botón "Verificar brecha" en el detalle de credencial. Definir cómo se llega a cada uno y si el detalle reutiliza la misma pantalla de resultado.
-11. **Pendientes visuales:** peso del texto de botones, representación del `ScoreRing` e idioma de las etiquetas del medidor de fortaleza. (Los estados de Primary/Danger ya quedaron **CONFIRMADOS**, el espécimen del campo está documentado en la sección 3 y el radio de tarjeta/aviso quedó confirmado en 16 dp.)
+11. **Pendientes visuales:** peso del texto de botones e idioma de las etiquetas del medidor de fortaleza. (**Resuelto:** el `ScoreRing` es un anillo continuo con verde/ámbar/rojo —sin azul ni 4 arcos—; los estados de Primary/Danger quedaron **CONFIRMADOS**; el espécimen del campo está documentado en la sección 3 y el radio de tarjeta/aviso quedó confirmado en 16 dp.)
 12. **`FLAG_SECURE`:** se implementa como helper reutilizable y se aplica **solo** a las pantallas de la bóveda (no al login). Falta definir el nombre/ubicación del helper.

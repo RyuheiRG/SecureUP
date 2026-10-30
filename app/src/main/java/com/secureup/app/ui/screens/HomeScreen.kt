@@ -70,12 +70,14 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(Spacing.L),
         ) {
             // Tarjeta principal: Security Score
+            // Figma (62:221): padding 24 horizontal; 40 vertical ajustado a Spacing.Xxl (32);
+            // separación de 20 entre la etiqueta y el anillo ajustada a Spacing.Xl (24).
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(Radius.Card))
                     .background(SecureUpColors.SurfaceVariant)
-                    .padding(Spacing.L),
+                    .padding(horizontal = Spacing.Xl, vertical = Spacing.Xxl),
             ) {
                 Text(
                     text = stringResource(id = R.string.home_score_label),
@@ -83,7 +85,7 @@ fun HomeScreen(
                     color = SecureUpColors.TextSecondary,
                 )
 
-                Spacer(modifier = Modifier.height(Spacing.M))
+                Spacer(modifier = Modifier.height(Spacing.Xl))
 
                 ScoreRing(
                     score = 78,
