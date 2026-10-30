@@ -29,8 +29,29 @@ val Inter = FontFamily(
  * labelLarge: override visto en botones y campos del login (16 / line-height 20).
  * labelMedium: etiqueta de los campos de texto (Medium 12 / line-height 16).
  * El peso SemiBold de labelLarge sigue POR CONFIRMAR.
+ *
+ * SLOTS SIN DISEÑO: `Typography()` solo define 6 slots. El resto (display*, headlineMedium/Small,
+ * titleMedium/Small, bodyMedium, labelSmall) se toman de la escala de Material 3 y solo se les
+ * cambia la familia a Inter. Así ningún componente de Material (Snackbar, AlertDialog, menús…)
+ * cae en la fuente por defecto del sistema (Roboto).
  */
+private val MaterialDefaultTypography = Typography()
+
+private fun TextStyle.withInterFamily(): TextStyle = copy(fontFamily = Inter)
+
 val SecureUpTypography = Typography(
+    // --- Sin diseño en Figma: escala de Material con Inter ---
+    displayLarge = MaterialDefaultTypography.displayLarge.withInterFamily(),
+    displayMedium = MaterialDefaultTypography.displayMedium.withInterFamily(),
+    displaySmall = MaterialDefaultTypography.displaySmall.withInterFamily(),
+    headlineMedium = MaterialDefaultTypography.headlineMedium.withInterFamily(),
+    headlineSmall = MaterialDefaultTypography.headlineSmall.withInterFamily(),
+    titleMedium = MaterialDefaultTypography.titleMedium.withInterFamily(),
+    titleSmall = MaterialDefaultTypography.titleSmall.withInterFamily(),
+    bodyMedium = MaterialDefaultTypography.bodyMedium.withInterFamily(),
+    labelSmall = MaterialDefaultTypography.labelSmall.withInterFamily(),
+
+    // --- Escala confirmada en Figma (nodo 4:72) ---
     headlineLarge = TextStyle(
         fontFamily = Inter,
         fontWeight = FontWeight.Bold,
