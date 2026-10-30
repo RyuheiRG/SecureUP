@@ -36,6 +36,20 @@ Soy principiante en Kotlin y Android. Es mi primera app. No puedo detectar por m
 - Si hay varias formas válidas de resolver algo, compáralas en pocas líneas (ventajas/desventajas) y recomienda una.
 - Si hay incertidumbre o un supuesto, decláralo explícitamente.
 
+### 3.1 Git y ramas
+
+Remoto: `origin` → https://github.com/RyuheiRG/SecureUP.git
+
+- **`main` está congelado**: solo recibe merges desde `develop` cuando se marque una entrega. Nunca se commitea ni se hace `push` directo a `main`.
+- **`develop`** es la rama de integración. Todo lo que se suba llega primero ahí.
+- Cada cambio nace de `develop` en su propia rama: `feat/<tema>`, `fix/<tema>`, `docs/<tema>` o `chore/<tema>` (kebab-case, corto y en español: `feat/vault-room`, `fix/accesibilidad-login`).
+- Al terminar: `git switch develop`, `git merge --no-ff <rama>` y `git push`.
+- Prohibido `git push --force` / `--force-with-lease` en `main` o `develop`, y prohibido `git reset --hard` sin que yo lo pida.
+- Commits pequeños, en español y con prefijo conventional commits (`feat:`, `fix:`, `docs:`, `chore:`). Un commit = un cambio con sentido propio; nada de "varios cambios" mezclados.
+- Antes de commitear: `.\gradlew assembleDebug` y `.\gradlew lintDebug` deben pasar (0 errores). Si algo falla, no se commitea.
+- **Nunca se sube**: `local.properties`, `build/`, `.gradle/`, `.idea/`, `*.iml`, `*.jks`/keystores, ni secretos, claves o tokens. Ya están en `.gitignore`; si algo así aparece en `git status`, no se agrega.
+- No se sube código que no compile, con logs sensibles o con datos de prueba que parezcan reales.
+
 ## 4. Arquitectura: MVVM (requisito de la maestra)
 
 Patrón: **View (Compose) → ViewModel → Repository → fuentes de datos (Room local / Retrofit remoto)**.
