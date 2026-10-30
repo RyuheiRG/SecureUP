@@ -1,39 +1,67 @@
 package com.secureup.app.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.secureup.app.R
 import com.secureup.app.ui.components.SecureUpButton
 import com.secureup.app.ui.components.SecureUpButtonVariant
 import com.secureup.app.ui.components.SecureUpTextField
+import com.secureup.app.ui.theme.SecureUPTheme
 import com.secureup.app.ui.theme.SecureUpColors
 import com.secureup.app.ui.theme.Spacing
+import com.secureup.app.viewmodel.AuthViewModel
+import com.secureup.app.viewmodel.LoginUiState
 
 /**
  * Login (frame auth02-login, nodo 87:204).
- * Solo pinta estado y emite eventos: todavía no hay lógica de negocio (AuthViewModel, paso 6).
+ * Lee el estado del AuthViewModel y emite eventos sin contener lógica de negocio.
  */
 @Composable
-fun LoginScreen() {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+fun LoginScreen(
+    viewModel: AuthViewModel = viewModel(factory = AuthViewModel.Factory()),
+    onRegisterClick: () -> Unit = {},
+    onAuthenticated: () -> Unit = {},
+) {
+    val uiState by viewModel.loginUiState.collectAsStateWithLifecycle()
 
+    LoginScreenContent(
+        uiState = uiState,
+        onEmailChange = viewModel::onLoginEmailChanged,
+        onPasswordChange = viewModel::onLoginPasswordChanged,
+        onLoginSubmit = { onAuthenticated() },
+        onRegisterClick = onRegisterClick,
+    )
+}
+
+@Composable
+fun LoginScreenContent(
+    uiState: LoginUiState,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onLoginSubmit: () -> Unit,
+    onRegisterClick: () -> Unit,
+) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -41,9 +69,11 @@ fun LoginScreen() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = Spacing.Xl),
-            verticalArrangement = Arrangement.spacedBy(Spacing.Xxl, Alignment.CenterVertically),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = Spacing.Xl, vertical = Spacing.Xxl),
+            verticalArrangement = Arrangement.spacedBy(Spacing.Xl),
         ) {
+            // Encabezado
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text(
                     text = stringResource(id = R.string.login_title),
@@ -52,54 +82,66 @@ fun LoginScreen() {
                 )
                 Text(
                     text = stringResource(id = R.string.login_subtitle),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = SecureUpColors.TextSecondary,
                 )
             }
 
+            // Campos del formulario
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.Xl)) {
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.Xl)) {
-                    SecureUpTextField(
-                        label = stringResource(id = R.string.login_email_label),
-                        value = email,
-                        onValueChange = { email = it },
-                        placeholder = stringResource(id = R.string.login_email_placeholder),
+                SecureUpTextField(
+                    label = stringResource(id = R.string.login_email_label),
+                    value = uiState.email,
+                    onValueChange = onEmailChange,
+                    placeholder = stringResource(id = R.string.login_email_placeholder),
+                    errorMessage = uiState.emailError,
+                )
+
+                SecureUpTextField(
+                    label = stringResource(id = R.string.login_password_label),
+                    value = uiState.password,
+                    onValueChange = onPasswordChange,
+                    isPassword = true,
+                    placeholder = stringResource(id = R.string.login_password_placeholder),
+                    errorMessage = uiState.passwordError ?: uiState.generalError,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(Spacing.S))
+
+            // Botón principal, enlace de registro y pie de página
+            Column(
+                verticalArrangement = Arrangement.spacedBy(Spacing.L),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                SecureUpButton(
+                    text = stringResource(id = R.string.login_submit),
+                    onClick = onLoginSubmit,
+                    modifier = Modifier.fillMaxWidth(),
+                    variant = SecureUpButtonVariant.Primary,
+                    enabled = !uiState.isLoading,
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.login_no_account),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = SecureUpColors.TextSecondary,
                     )
-                    SecureUpTextField(
-                        label = stringResource(id = R.string.login_password_label),
-                        value = password,
-                        onValueChange = { password = it },
-                        isPassword = true,
+                    Text(
+                        text = stringResource(id = R.string.login_create_account),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable { onRegisterClick() },
                     )
                 }
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(Spacing.L),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    SecureUpButton(
-                        text = stringResource(id = R.string.login_submit),
-                        onClick = { /* TODO(paso 6): conectar AuthViewModel */ },
-                        modifier = Modifier.fillMaxWidth(),
-                        variant = SecureUpButtonVariant.Primary,
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.login_no_account),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = SecureUpColors.TextSecondary,
-                        )
-                        Text(
-                            text = stringResource(id = R.string.login_create_account),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                }
+                Spacer(modifier = Modifier.height(Spacing.M))
 
                 Text(
                     text = stringResource(id = R.string.login_footer),
@@ -110,5 +152,36 @@ fun LoginScreen() {
                 )
             }
         }
+    }
+}
+
+@Preview(name = "LoginScreen - Estado Normal", showBackground = true)
+@Composable
+private fun LoginScreenNormalPreview() {
+    SecureUPTheme {
+        LoginScreenContent(
+            uiState = LoginUiState(),
+            onEmailChange = {},
+            onPasswordChange = {},
+            onLoginSubmit = {},
+            onRegisterClick = {},
+        )
+    }
+}
+
+@Preview(name = "LoginScreen - Estado con Error", showBackground = true)
+@Composable
+private fun LoginScreenErrorPreview() {
+    SecureUPTheme {
+        LoginScreenContent(
+            uiState = LoginUiState(
+                email = "usuario@correo.com",
+                generalError = "Credenciales incorrectas. Intenta de nuevo.",
+            ),
+            onEmailChange = {},
+            onPasswordChange = {},
+            onLoginSubmit = {},
+            onRegisterClick = {},
+        )
     }
 }

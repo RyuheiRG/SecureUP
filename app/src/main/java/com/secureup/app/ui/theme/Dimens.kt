@@ -11,7 +11,7 @@ object Radius {
     /** Botones y campos de texto. Confirmado en Figma: 12 dp. */
     val Control = 12.dp
 
-    /** Tarjetas. POR CONFIRMAR en Figma (provisional 16 dp). */
+    /** Tarjetas y avisos. Confirmado en Figma: 16 dp (aviso Danger, nodo 87:197). */
     val Card = 16.dp
 
     /** Badges en forma de píldora (extremos semicirculares). */

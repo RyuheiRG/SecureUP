@@ -127,7 +127,7 @@ Autenticación con JWT de vida corta en header `Authorization: Bearer`.
 8. Escáner QR + resultado + historial.
 9. Perfil (logout, cambiar contraseña maestra, eliminar cuenta).
 
-Marca aquí el paso en el que vamos: **Paso actual: 1**
+Marca aquí el paso en el que vamos: **Paso actual: 3**
 
 ## 9. Documentación oficial (consultar antes de usar una API)
 

@@ -54,8 +54,10 @@ Archivos requeridos: `res/font/inter_regular.ttf`, `inter_medium.ttf`, `inter_se
 |---|---|---|
 | gap 36 | `Spacing.Xxl` | 32 |
 | gap 28 | `Spacing.Xl` | 24 |
+| padding vertical 40 (registro) | `Spacing.Xxl` | 32 |
+| gap 20 (registro) | `Spacing.Xl` | 24 |
 
-### Radios (`Dimens.kt`): controles (botones y campos) **12 dp** (confirmado en Figma); tarjetas **16 dp** (POR CONFIRMAR); badges en píldora.
+### Radios (`Dimens.kt`): controles (botones y campos) **12 dp** (confirmado en Figma); tarjetas y avisos **16 dp** (confirmado en el aviso Danger `87:197`); badges en píldora.
 
 ## 3. Componentes (`ui/components/`)
 
@@ -63,6 +65,7 @@ Archivos requeridos: `res/font/inter_regular.ttf`, `inter_medium.ttf`, `inter_se
 |---|---|---|
 | `SecureUpButton` | Primary (relleno azul), Secondary (fondo SurfaceVariant, borde `Outline` `#4D5973`), Danger (relleno rojo); cada uno con 3 estados: normal, pressed, disabled | Texto oscuro (`OnPrimary`) sobre Primary y Danger. Secondary: borde `Outline` y estados por **opacidad** → Default 100 %, Pressed 80 %, Disabled 40 % (confirmado en Figma). Primary y Danger: **CONFIRMADOS** con los mismos estados por opacidad → Pressed 80 %, Disabled 40 %. Ancho completo en la mayoría de pantallas. |
 | `SecureUpTextField` | Normal, enfocado (borde Primary), error (borde Danger + mensaje con ícono de alerta), con ícono de ojo (mostrar/ocultar) | Etiqueta arriba del campo (TextSecondary, 12). Campos de contraseña con `PasswordVisualTransformation` y toggle del ojo (área táctil 48 dp, ícono visual 20 dp). Espécimen detallado abajo. |
+| `InfoBanner` | Warning (ámbar) y Danger (rojo) | Aviso con `ic_alert_triangle`; el tint cambia por variante (`Warning` / `Danger`). Contenedor, radio, padding y texto distintos por variante. Espécimen abajo. |
 | `CredentialCard` | Avatar circular (placeholder), título (sitio), subtítulo (usuario), punto de estado a la derecha | Punto verde / ámbar / rojo según estado de la credencial (ver pendiente 2). |
 | `StatusBadge` | Seguro (verde), Sospechoso (ámbar), Peligroso (rojo) | Píldora con punto y texto oscuro. |
 | `PasswordStrengthBar` | 4 segmentos + etiqueta: Weak (1 rojo), Fair (2 ámbar), Good (3 azul), Strong (4 verde) | Segmentos inactivos en SurfaceVariant. Etiquetas en inglés en Figma: **confirmar idioma**. |
@@ -76,13 +79,29 @@ Archivos requeridos: `res/font/inter_regular.ttf`, `inter_medium.ttf`, `inter_se
 
 - **Columna** con gap 6 entre etiqueta y caja.
 - **Etiqueta:** estilo `labelMedium` (Inter Medium 12/16), color `TextSecondary`.
-- **Caja:** fondo `SurfaceVariant` con borde de 1 px del mismo color (invisible en estado normal), padding 16 × 14, radio 12 (`Radius.Control`).
+- **Caja:** fondo `SurfaceVariant` con borde de 1 px del mismo color (invisible en estado normal), padding 16 × 14, radio 12 (`Radius.Control`). Alto resultante: **48 dp**; el `IconButton` del ojo (48 dp) ocupa todo el alto y el ícono visual mide 20 dp.
 - **Texto del campo:** `FieldTextStyle` (Inter 16/20). El color del texto escrito es `TextPrimary` (**SUPUESTO**, no re-leído en Figma).
 - **Foco:** borde `Primary` (**PROVISIONAL**, no re-leído en Figma).
 - **Error:** borde `Danger` (leído en `87:220`) + mensaje con ícono debajo.
-- **Ícono del mensaje de error:** `ic_danger` (Vector Asset exportado de Figma, trazo `Danger`), 16 dp.
+- **Ícono del mensaje de error:** `ic_alert_triangle` (Vector Asset exportado de Figma, trazo), 16 dp, tint `Danger`.
 
-**Nombres de íconos de estado:** `ic_danger` = círculo rojo con "!" (Danger); `ic_warning` = triángulo ámbar con "!" (Warning). Por ahora no se usa la palabra `alert` en nombres de archivo.
+**Nombres de íconos de estado:** `ic_alert_triangle` = triángulo de alerta (trazo de 2, exportado de Figma); lo usan `InfoBanner` y el mensaje de error de `SecureUpTextField`. `ic_danger` = círculo rojo con "!" (Danger) e `ic_warning` = triángulo ámbar con "!" (Warning) se conservan como assets, pero ya no se usan en esos dos componentes.
+
+### Espécimen: `InfoBanner` (Figma `87:197` Danger; `96:278` Warning)
+
+- **Estructura:** `Row` con caja de ícono de 20 dp (ícono de 18 dp), separación de 12 dp y texto.
+- **Warning** (leído en `96:278`):
+  - Fondo `Surface` (`#181B22`), **sin borde**, radio **8 dp**.
+  - Padding: 12 dp a los lados, **6 dp arriba** y **12 dp abajo**.
+  - Ícono `ic_alert_triangle` con tint `Warning`, 18 dp.
+  - Texto: `bodySmall` (Inter Regular 12 / 16, letter-spacing 0.2), color `TextSecondary`.
+- **Danger** (leído en `87:197`):
+  - Fondo `Danger` con **8 % de opacidad** (`rgba(255,92,108,0.08)`), borde de **1 dp** `Danger`, radio **16 dp** (`Radius.Card`).
+  - Padding: **14 dp** en los cuatro lados.
+  - Ícono `ic_alert_triangle` con tint `Danger`, 18 dp.
+  - Texto: Inter Regular **13 / 18**, color `Danger`.
+- **Nota de adaptación:** el aviso Danger de Figma no tiene un ícono separado: usa el emoji "⚠️" dentro del texto. En Compose se reemplaza por `ic_alert_triangle` de 18 dp, con el mismo tint `Danger`, y se quita el emoji del texto.
+- **Provisional:** el tamaño 18 dp y la separación de 12 dp del ícono en Danger se toman del aviso Warning; 13 / 18 no existe como slot de tipografía y se aplica como override dentro del componente; el radio 8 dp de Warning aún no está en `Radius` (constante privada del componente).
 
 Estructura de pantalla: `Scaffold(topBar = SecureUpTopBar, bottomBar = SecureUpBottomBar)` con contenido en `Column` y padding `Spacing.L`.
 
@@ -127,6 +146,8 @@ Las tres variantes de resultado (brecha y QR) son **una sola pantalla** que camb
 
 ## 5. Notas de implementación
 
+- Onboarding: se muestra en cada arranque de la app de forma intencional en esta fase. Persistir el estado "completado" es un pendiente técnico que se implementará con Jetpack DataStore en pasos posteriores.
+- Errores de validación por campo: no están diseñados explícitamente en Figma; se utiliza el estado de error estándar de `SecureUpTextField` (borde rojo `Danger` + mensaje explicativo con ícono `ic_alert_triangle`).
 - Generador de contraseñas (A07): longitud ajustable (16 en el ejemplo) y alternadores A-Z, a-z, 0-9, símbolos. Usar `SecureRandom`, nunca `Random`.
 - Detalle de credencial: "Se borrará del portapapeles en 30 s". Marcar el contenido copiado como sensible (`ClipDescription.EXTRA_IS_SENSITIVE`, Android 13+) y programar la limpieza; verificar en la documentación cómo se comporta con la app en segundo plano.
 - Pantallas de la bóveda que muestran contraseñas: `FLAG_SECURE` mediante un helper reutilizable (ver pendiente 12). No se aplica al login.
@@ -144,5 +165,5 @@ Las tres variantes de resultado (brecha y QR) son **una sola pantalla** que camb
 8. **Texto "Dominio verificado"** en resultado seguro: sobreafirma. Que no haya coincidencias en listas no verifica nada. Sugerencia: "Sin amenazas conocidas".
 9. **Cambiar contraseña maestra:** el medidor de fortaleza aparece bajo la contraseña **actual**; debería estar bajo la **nueva**.
 10. **Navegación del verificador de brechas.** Hay un verificador independiente (contraseña escrita a mano) y un botón "Verificar brecha" en el detalle de credencial. Definir cómo se llega a cada uno y si el detalle reutiliza la misma pantalla de resultado.
-11. **Pendientes visuales:** radio de tarjeta, peso del texto de botones, representación del `ScoreRing` e idioma de las etiquetas del medidor de fortaleza. (Los estados de Primary/Danger ya quedaron **CONFIRMADOS** y el espécimen del campo está documentado en la sección 3.)
+11. **Pendientes visuales:** peso del texto de botones, representación del `ScoreRing` e idioma de las etiquetas del medidor de fortaleza. (Los estados de Primary/Danger ya quedaron **CONFIRMADOS**, el espécimen del campo está documentado en la sección 3 y el radio de tarjeta/aviso quedó confirmado en 16 dp.)
 12. **`FLAG_SECURE`:** se implementa como helper reutilizable y se aplica **solo** a las pantallas de la bóveda (no al login). Falta definir el nombre/ubicación del helper.

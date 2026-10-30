@@ -1,12 +1,25 @@
 <resources>
     <string name="app_name">Secure UP</string>
 
+    <!-- Splash (A01 - Splash) -->
+    <string name="splash_title">SecureUP</string>
+    <string name="splash_subtitle">Seguridad sin compromisos</string>
+
+    <!-- Onboarding 1 y 2 (A02 y A03) -->
+    <string name="onboarding_1_title">Tus contraseñas, cifradas en tu dispositivo</string>
+    <string name="onboarding_1_description">Toda tu información se encripta de forma local con algoritmo AES-256. Nadie más puede acceder, ni siquiera nosotros.</string>
+    <string name="onboarding_next">Siguiente</string>
+    <string name="onboarding_2_title">Verifica sin exponer tus datos</string>
+    <string name="onboarding_2_description">Escanea filtraciones de seguridad de tus cuentas de forma segura sin revelar tu clave maestra en ningún momento.</string>
+    <string name="onboarding_start">Comenzar</string>
+
     <!-- Login (auth02-login) -->
     <string name="login_title">Bienvenido</string>
     <string name="login_subtitle">Ingresa tus credenciales para acceder a tu panel.</string>
     <string name="login_email_label">Correo electrónico</string>
     <string name="login_email_placeholder">usuario@correo.com</string>
     <string name="login_password_label">Contraseña maestra</string>
+    <string name="login_password_placeholder">Escribe tu contraseña maestra</string>
     <string name="login_submit">Iniciar sesión</string>
     <string name="login_no_account">"¿No tienes cuenta? "</string>
     <string name="login_create_account">Crear cuenta</string>
@@ -14,7 +27,39 @@
     <!-- Se usará cuando se conecte la lógica de autenticación (paso 6). -->
     <string name="login_error">Credenciales incorrectas. Intenta de nuevo.</string>
 
+    <!-- Registro (auth01-registro) -->
+    <string name="register_title">Crear cuenta</string>
+    <string name="register_subtitle">Registra tu cuenta y configura tu acceso de seguridad principal.</string>
+    <string name="register_email_label">Correo electrónico</string>
+    <string name="register_email_placeholder">ejemplo@correo.com</string>
+    <string name="register_password_label">Contraseña maestra</string>
+    <string name="register_password_placeholder">Escribe tu contraseña maestra</string>
+    <string name="register_confirm_password_label">Confirmar contraseña maestra</string>
+    <string name="register_confirm_password_placeholder">Repite tu contraseña maestra</string>
+    <string name="register_warning">Si olvidas tu contraseña maestra, no podrás recuperar tu bóveda. Guárdala en un lugar seguro.</string>
+    <string name="register_submit">Crear cuenta</string>
+    <string name="register_have_account">Ya tengo cuenta</string>
+
     <!-- Campo de contraseña -->
     <string name="password_show">Mostrar contraseña</string>
     <string name="password_hide">Ocultar contraseña</string>
+
+    <!-- Inicio / Dashboard (A09a) -->
+    <string name="home_title">Mi Seguridad</string>
+    <string name="home_score_label">Security Score</string>
+    <string name="home_score_value">78</string>
+    <string name="home_score_max">/ 100</string>
+    <string name="home_passwords_label">Contraseñas</string>
+    <string name="home_passwords_value">12 Guardadas</string>
+    <string name="home_breaches_label">Brechas</string>
+    <string name="home_breaches_value">2 detectadas</string>
+    <string name="home_quick_access_label">Accesos rápidos</string>
+    <string name="home_new_entry_button">+ Nueva entrada</string>
+    <string name="home_scan_qr_button">Escanear QR</string>
+
+    <!-- Navegación inferior -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_vault">Bóveda</string>
+    <string name="nav_scanner">Escáner</string>
+    <string name="nav_profile">Perfil</string>
 </resources>

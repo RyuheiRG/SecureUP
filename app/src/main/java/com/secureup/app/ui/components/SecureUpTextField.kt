@@ -49,6 +49,7 @@ private val FieldVerticalPadding = 14.dp
 private val FieldBorderWidth = 1.dp
 private val LabelBottomGap = 6.dp
 private val EyeIconSize = 20.dp
+private val EyeTouchTargetSize = 48.dp
 private val ErrorIconSize = 16.dp
 
 /**
@@ -99,11 +100,19 @@ fun SecureUpTextField(
                 .fillMaxWidth()
                 .clip(shape)
                 .background(SecureUpColors.SurfaceVariant, shape)
-                .border(FieldBorderWidth, borderColor, shape)
-                .padding(horizontal = Spacing.L, vertical = FieldVerticalPadding),
+                .border(FieldBorderWidth, borderColor, shape),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(modifier = Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(
+                        start = Spacing.L,
+                        top = FieldVerticalPadding,
+                        bottom = FieldVerticalPadding,
+                        end = if (isPassword) 0.dp else Spacing.L,
+                    )
+            ) {
                 if (value.isEmpty() && placeholder != null) {
                     Text(
                         text = placeholder,
@@ -129,7 +138,10 @@ fun SecureUpTextField(
 
             if (isPassword) {
                 // IconButton garantiza un área táctil de 48 dp; el ícono visual se queda en 20 dp.
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                IconButton(
+                    onClick = { passwordVisible = !passwordVisible },
+                    modifier = Modifier.size(EyeTouchTargetSize),
+                ) {
                     Icon(
                         painter = painterResource(
                             id = if (passwordVisible) R.drawable.ic_eye_off else R.drawable.ic_eye
@@ -152,7 +164,7 @@ fun SecureUpTextField(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.Xs),
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_danger),
+                    painter = painterResource(id = R.drawable.ic_alert_triangle),
                     contentDescription = null,
                     tint = SecureUpColors.Danger,
                     modifier = Modifier.size(ErrorIconSize),
