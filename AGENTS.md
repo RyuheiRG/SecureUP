@@ -43,8 +43,11 @@ Remoto: `origin` → https://github.com/RyuheiRG/SecureUP.git
 - **`main` está congelado**: solo recibe merges desde `develop` cuando se marque una entrega. Nunca se commitea ni se hace `push` directo a `main`.
 - **`develop`** es la rama de integración. Todo lo que se suba llega primero ahí.
 - Cada cambio nace de `develop` en su propia rama: `feat/<tema>`, `fix/<tema>`, `docs/<tema>` o `chore/<tema>` (kebab-case, corto, **en inglés**: `feat/vault-room`, `fix/login-accessibility`). `main` nunca recibe commits directos.
+- **Antes de empezar a trabajar**: `git switch develop` y `git pull` (o `git pull --ff-only`). Nunca se empieza una rama desde una `develop` desactualizada.
 - Al terminar: `git switch develop`, `git merge --no-ff <rama>` y `git push`.
+- Si el `git push` se rechaza por *non-fast-forward* (alguien más subió antes), hacer `git pull` y resolver; **nunca** `git push --force`.
 - Prohibido `git push --force` / `--force-with-lease` en `main` o `develop`, y prohibido `git reset --hard` sin que yo lo pida.
+- Los finales de línea los controla `.gitattributes` (`eol=lf` en el repo, `eol=crlf` en `*.bat`). No se cambia `core.autocrlf` ni se commitea un archivo entero solo por saltos de línea.
 - **Commits en inglés**, pequeños y con prefijo conventional commits (`feat:`, `fix:`, `docs:`, `chore:`). Un commit = un cambio con sentido propio; nada de "varios cambios" mezclados. Ejemplo: `feat(a11y): announce bottom bar tabs as selectable`.
 - Antes de commitear: `.\gradlew assembleDebug` y `.\gradlew lintDebug` deben pasar (0 errores). Si algo falla, no se commitea.
 - **Nunca se sube**: `local.properties`, `build/`, `.gradle/`, `.idea/`, `*.iml`, `*.jks`/keystores, ni secretos, claves o tokens. Ya están en `.gitignore`; si algo así aparece en `git status`, no se agrega.
@@ -141,7 +144,7 @@ Autenticación con JWT de vida corta en header `Authorization: Bearer`.
 8. Escáner QR + resultado + historial.
 9. Perfil (logout, cambiar contraseña maestra, eliminar cuenta).
 
-Marca aquí el paso en el que vamos: **Paso actual: 3**
+Marca aquí el paso en el que vamos: **Paso actual: 4**
 
 ## 9. Documentación oficial (consultar antes de usar una API)
 
