@@ -61,16 +61,16 @@ Archivos requeridos: `res/font/inter_regular.ttf`, `inter_medium.ttf`, `inter_se
 
 ### Márgenes y padding (regla global)
 
-Ninguna pantalla define márgenes propios: se usan estas medidas para que el ritmo vertical y horizontal sea igual en toda la app.
+Ninguna pantalla define márgenes propios. **El margen lateral depende del tipo de pantalla**, según Figma:
 
-| Contexto | Valor | Token |
-|---|---|---|
-| Padding horizontal de pantalla (borde izquierdo/derecho del contenido) | 16 | `Spacing.L` |
-| Separación entre bloques de una pantalla | 16 | `Spacing.L` |
-| Padding interno de tarjetas de estadísticas (Contraseñas, Brechas) | 16 | `Spacing.L` |
-| Padding interno de la tarjeta destacada (Security Score) | 24 horizontal / 32 vertical | `Spacing.Xl` / `Spacing.Xxl` |
-| Separación entre la tarjeta del score y el bloque siguiente | 16 | `Spacing.L` |
-| Separación entre botones de una fila | 12 | `Spacing.M` |
+| Contexto | Valor | Token | Origen en Figma |
+|---|---|---|---|
+| Pantallas de autenticación (Login, Registro) | 24 | `Spacing.Xl` | `auth02-login` (`87:204`): contenido en x=24, ancho 312 |
+| Pantallas con tarjeta y `SecureUpTopBar` (Inicio, Bóveda, Escáner, Perfil) | 16 | `Spacing.L` | `A09a - Dashboard Home` (`49:283`): tarjetas en x=16, ancho 328 |
+| Separación entre bloques de una pantalla | 16 | `Spacing.L` | |
+| Padding interno de tarjetas de estadísticas (Contraseñas, Brechas) | 16 | `Spacing.L` | `62:230` |
+| Padding interno de la tarjeta destacada (Security Score) | 24 horizontal / 32 vertical | `Spacing.Xl` / `Spacing.Xxl` | `62:221` (40 vertical ajustado) |
+| Separación entre botones de una fila | 12 | `Spacing.M` | `62:238` |
 
 ### Radios (`Dimens.kt`): controles (botones y campos) **12 dp** (confirmado en Figma); tarjetas y avisos **16 dp** (confirmado en el aviso Danger `87:197`); badges en píldora.
 
