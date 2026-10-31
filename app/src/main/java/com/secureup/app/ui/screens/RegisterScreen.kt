@@ -57,7 +57,7 @@ fun RegisterScreen(
         onEmailChange = viewModel::onRegisterEmailChanged,
         onMasterPasswordChange = viewModel::onRegisterMasterPasswordChanged,
         onConfirmMasterPasswordChange = viewModel::onRegisterConfirmPasswordChanged,
-        onRegisterSubmit = { onAuthenticated() },
+        onRegisterSubmit = { viewModel.register(onSuccess = onAuthenticated) },
         onLoginClick = onLoginClick,
     )
 }

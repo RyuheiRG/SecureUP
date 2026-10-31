@@ -55,7 +55,7 @@ fun LoginScreen(
         uiState = uiState,
         onEmailChange = viewModel::onLoginEmailChanged,
         onPasswordChange = viewModel::onLoginPasswordChanged,
-        onLoginSubmit = { onAuthenticated() },
+        onLoginSubmit = { viewModel.login(onSuccess = onAuthenticated) },
         onRegisterClick = onRegisterClick,
     )
 }
