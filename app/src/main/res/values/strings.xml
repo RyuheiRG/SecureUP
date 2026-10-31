@@ -17,4 +17,45 @@
     <!-- Campo de contraseña -->
     <string name="password_show">Mostrar contraseña</string>
     <string name="password_hide">Ocultar contraseña</string>
+
+    <!-- Perfil -->
+    <string name="profile_title">Mi Perfil</string>
+    <string name="profile_edit_name_title">Editar nombre</string>
+    <string name="profile_name_label">Nombre</string>
+    <string name="profile_save_button">Guardar</string>
+    <string name="profile_name_updated">Nombre actualizado</string>
+    <string name="profile_last_login">Último inicio de sesión: %s</string>
+    <string name="profile_security_section">SEGURIDAD</string>
+    <string name="profile_change_master_password">Cambiar contraseña maestra</string>
+    <string name="profile_logout_button">Cerrar sesión</string>
+    <string name="profile_logout_dialog_title">¿Cerrar sesión?</string>
+    <string name="profile_logout_dialog_message">Tu bóveda se borrará de la memoria de este dispositivo.</string>
+    <string name="profile_logout_dialog_cancel">Cancelar</string>
+    <string name="profile_logout_dialog_confirm">Cerrar sesión</string>
+
+    <!-- Cambiar contraseña maestra -->
+    <string name="change_password_title">Cambiar contraseña</string>
+    <string name="change_password_current_label">Contraseña maestra actual</string>
+    <string name="change_password_new_label">Nueva contraseña maestra</string>
+    <string name="change_password_confirm_label">Confirmar nueva contraseña maestra</string>
+    <string name="change_password_placeholder">••••••••••••</string>
+    <string name="change_password_warning_info">Esto puede tardar unos segundos mientras se actualiza tu bóveda.</string>
+    <string name="change_password_submit_button">Actualizar contraseña maestra</string>
+    <string name="change_password_success">Contraseña actualizada</string>
+    <string name="change_password_error_current_incorrect">Contraseña maestra actual incorrecta</string>
+    <string name="change_password_error_same_password">La nueva contraseña debe ser diferente a la actual</string>
+    <string name="change_password_error_mismatch">Las contraseñas no coinciden</string>
+    <string name="change_password_error_weak">La contraseña no cumple con los requisitos de seguridad</string>
+
+    <!-- Medidor de fortaleza de contraseña -->
+    <string name="strength_weak">Débil</string>
+    <string name="strength_fair">Regular</string>
+    <string name="strength_good">Buena</string>
+    <string name="strength_strong">Fuerte</string>
+
+    <!-- Navegación inferior -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_vault">Bóveda</string>
+    <string name="nav_scanner">Escáner</string>
+    <string name="nav_profile">Perfil</string>
 </resources>

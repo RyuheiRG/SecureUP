@@ -1,5 +1,6 @@
 package com.secureup.app.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,16 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.secureup.app.R
+import com.secureup.app.ui.components.ButtonStyle
 import com.secureup.app.ui.components.SecureUpButton
-import com.secureup.app.ui.components.SecureUpButtonVariant
 import com.secureup.app.ui.components.SecureUpTextField
 import com.secureup.app.ui.theme.SecureUpColors
 import com.secureup.app.ui.theme.Spacing
 
-/**
- * Login (frame auth02-login, nodo 87:204).
- * Solo pinta estado y emite eventos: todavía no hay lógica de negocio (AuthViewModel, paso 6).
- */
+
 @Composable
 fun LoginScreen(onRegisterClick: () -> Unit) {
     var email by remember { mutableStateOf("") }
@@ -82,7 +80,7 @@ fun LoginScreen(onRegisterClick: () -> Unit) {
                         text = stringResource(id = R.string.login_submit),
                         onClick = { /* TODO(paso 6): conectar AuthViewModel */ },
                         modifier = Modifier.fillMaxWidth(),
-                        variant = SecureUpButtonVariant.Primary,
+                        style = ButtonStyle.Primary,
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -97,6 +95,7 @@ fun LoginScreen(onRegisterClick: () -> Unit) {
                             text = stringResource(id = R.string.login_create_account),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clickable { onRegisterClick() },
                         )
                     }
                 }
