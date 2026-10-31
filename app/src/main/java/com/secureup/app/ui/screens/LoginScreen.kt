@@ -69,6 +69,8 @@ fun LoginScreenContent(
     onRegisterClick: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
+    val emailError = uiState.emailErrorRes?.let { stringResource(id = it) }
+    val passwordError = (uiState.passwordErrorRes ?: uiState.generalErrorRes)?.let { stringResource(id = it) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -102,7 +104,7 @@ fun LoginScreenContent(
                     value = uiState.email,
                     onValueChange = onEmailChange,
                     placeholder = stringResource(id = R.string.login_email_placeholder),
-                    errorMessage = uiState.emailError,
+                    errorMessage = emailError,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
                         imeAction = ImeAction.Next,
@@ -118,7 +120,7 @@ fun LoginScreenContent(
                     onValueChange = onPasswordChange,
                     isPassword = true,
                     placeholder = stringResource(id = R.string.login_password_placeholder),
-                    errorMessage = uiState.passwordError ?: uiState.generalError,
+                    errorMessage = passwordError,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done,
@@ -201,7 +203,7 @@ private fun LoginScreenErrorPreview() {
         LoginScreenContent(
             uiState = LoginUiState(
                 email = "usuario@correo.com",
-                generalError = "Credenciales incorrectas. Intenta de nuevo.",
+                generalErrorRes = R.string.login_error,
             ),
             onEmailChange = {},
             onPasswordChange = {},

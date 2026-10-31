@@ -72,6 +72,10 @@ fun RegisterScreenContent(
     onLoginClick: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
+    val emailError = uiState.emailErrorRes?.let { stringResource(id = it) }
+    val masterPasswordError = uiState.masterPasswordErrorRes?.let { stringResource(id = it) }
+    val confirmPasswordError = (uiState.confirmMasterPasswordErrorRes ?: uiState.generalErrorRes)
+        ?.let { stringResource(id = it) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -105,7 +109,7 @@ fun RegisterScreenContent(
                     value = uiState.email,
                     onValueChange = onEmailChange,
                     placeholder = stringResource(id = R.string.register_email_placeholder),
-                    errorMessage = uiState.emailError,
+                    errorMessage = emailError,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
                         imeAction = ImeAction.Next,
@@ -121,7 +125,7 @@ fun RegisterScreenContent(
                     onValueChange = onMasterPasswordChange,
                     isPassword = true,
                     placeholder = stringResource(id = R.string.register_password_placeholder),
-                    errorMessage = uiState.masterPasswordError,
+                    errorMessage = masterPasswordError,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Next,
@@ -137,7 +141,7 @@ fun RegisterScreenContent(
                     onValueChange = onConfirmMasterPasswordChange,
                     isPassword = true,
                     placeholder = stringResource(id = R.string.register_confirm_password_placeholder),
-                    errorMessage = uiState.confirmMasterPasswordError ?: uiState.generalError,
+                    errorMessage = confirmPasswordError,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done,
