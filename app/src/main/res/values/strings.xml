@@ -24,7 +24,6 @@
     <string name="login_no_account">"¿No tienes cuenta? "</string>
     <string name="login_create_account">Crear cuenta</string>
     <string name="login_footer">Verificamos tu identidad para proteger tu información</string>
-    <!-- Se usará cuando se conecte la lógica de autenticación (paso 6). -->
     <string name="login_error">Credenciales incorrectas. Intenta de nuevo.</string>
 
     <!-- Registro (auth01-registro) -->
@@ -39,6 +38,16 @@
     <string name="register_warning">Si olvidas tu contraseña maestra, no podrás recuperar tu bóveda. Guárdala en un lugar seguro.</string>
     <string name="register_submit">Crear cuenta</string>
     <string name="register_have_account">Ya tengo cuenta</string>
+    <string name="register_error">Error al registrar la cuenta. Intenta de nuevo.</string>
+
+    <!-- Mensajes de validación de autenticación -->
+    <string name="auth_error_email_required_login">Ingresa tu correo electrónico</string>
+    <string name="auth_error_email_required_register">Ingresa un correo electrónico</string>
+    <string name="auth_error_email_invalid">Formato de correo electrónico inválido</string>
+    <string name="auth_error_password_required">Ingresa tu contraseña maestra</string>
+    <string name="auth_error_password_too_short">La contraseña maestra debe tener al menos 12 caracteres</string>
+    <string name="auth_error_confirm_required">Confirma tu contraseña maestra</string>
+    <string name="auth_error_confirm_mismatch">Las contraseñas no coinciden</string>
 
     <!-- Campo de contraseña -->
     <string name="password_show">Mostrar contraseña</string>

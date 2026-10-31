@@ -1,13 +1,20 @@
 package com.secureup.app.viewmodel
 
+import androidx.annotation.StringRes
+import com.secureup.app.R
+
 /**
  * Resultado de la validación de campos de autenticación.
+ *
+ * Los errores son IDs de `strings.xml` (@StringRes), no texto: el ViewModel no
+ * conoce el idioma ni tiene acceso a recursos, y la pantalla los resuelve con
+ * `stringResource`.
  */
 data class AuthValidationResult(
     val isValid: Boolean,
-    val emailError: String? = null,
-    val passwordError: String? = null,
-    val confirmPasswordError: String? = null,
+    @get:StringRes val emailErrorRes: Int? = null,
+    @get:StringRes val passwordErrorRes: Int? = null,
+    @get:StringRes val confirmPasswordErrorRes: Int? = null,
     val sanitizedEmail: String = "",
 )
 
@@ -26,51 +33,51 @@ object AuthValidator {
 
     fun validateLogin(email: String, password: String): AuthValidationResult {
         val sanitizedEmail = email.trim()
-        val emailError = when {
-            sanitizedEmail.isBlank() -> "Ingresa tu correo electrónico"
-            !EMAIL_REGEX.matches(sanitizedEmail) -> "Formato de correo electrónico inválido"
+        val emailErrorRes = when {
+            sanitizedEmail.isBlank() -> R.string.auth_error_email_required_login
+            !EMAIL_REGEX.matches(sanitizedEmail) -> R.string.auth_error_email_invalid
             else -> null
         }
 
-        val passwordError = when {
-            password.isEmpty() -> "Ingresa tu contraseña maestra"
-            password.length < 12 -> "La contraseña maestra debe tener al menos 12 caracteres"
+        val passwordErrorRes = when {
+            password.isEmpty() -> R.string.auth_error_password_required
+            password.length < 12 -> R.string.auth_error_password_too_short
             else -> null
         }
 
         return AuthValidationResult(
-            isValid = emailError == null && passwordError == null,
-            emailError = emailError,
-            passwordError = passwordError,
+            isValid = emailErrorRes == null && passwordErrorRes == null,
+            emailErrorRes = emailErrorRes,
+            passwordErrorRes = passwordErrorRes,
             sanitizedEmail = sanitizedEmail,
         )
     }
 
     fun validateRegister(email: String, password: String, confirmPassword: String): AuthValidationResult {
         val sanitizedEmail = email.trim()
-        val emailError = when {
-            sanitizedEmail.isBlank() -> "Ingresa un correo electrónico"
-            !EMAIL_REGEX.matches(sanitizedEmail) -> "Formato de correo electrónico inválido"
+        val emailErrorRes = when {
+            sanitizedEmail.isBlank() -> R.string.auth_error_email_required_register
+            !EMAIL_REGEX.matches(sanitizedEmail) -> R.string.auth_error_email_invalid
             else -> null
         }
 
-        val passwordError = when {
-            password.isEmpty() -> "Ingresa tu contraseña maestra"
-            password.length < 12 -> "La contraseña maestra debe tener al menos 12 caracteres"
+        val passwordErrorRes = when {
+            password.isEmpty() -> R.string.auth_error_password_required
+            password.length < 12 -> R.string.auth_error_password_too_short
             else -> null
         }
 
-        val confirmPasswordError = when {
-            confirmPassword.isEmpty() -> "Confirma tu contraseña maestra"
-            confirmPassword != password -> "Las contraseñas no coinciden"
+        val confirmPasswordErrorRes = when {
+            confirmPassword.isEmpty() -> R.string.auth_error_confirm_required
+            confirmPassword != password -> R.string.auth_error_confirm_mismatch
             else -> null
         }
 
         return AuthValidationResult(
-            isValid = emailError == null && passwordError == null && confirmPasswordError == null,
-            emailError = emailError,
-            passwordError = passwordError,
-            confirmPasswordError = confirmPasswordError,
+            isValid = emailErrorRes == null && passwordErrorRes == null && confirmPasswordErrorRes == null,
+            emailErrorRes = emailErrorRes,
+            passwordErrorRes = passwordErrorRes,
+            confirmPasswordErrorRes = confirmPasswordErrorRes,
             sanitizedEmail = sanitizedEmail,
         )
     }

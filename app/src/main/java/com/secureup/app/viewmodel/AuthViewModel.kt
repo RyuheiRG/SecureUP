@@ -1,11 +1,14 @@
 package com.secureup.app.viewmodel
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.secureup.app.R
 import com.secureup.app.data.repository.AuthRepository
 import com.secureup.app.data.repository.AuthResult
 import com.secureup.app.data.repository.FakeAuthRepository
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,13 +18,16 @@ import kotlinx.coroutines.launch
 
 /**
  * Estado de la UI para la pantalla de Login.
+ *
+ * Los errores son IDs de `strings.xml`, no texto: la pantalla los resuelve con
+ * `stringResource` y así el ViewModel no depende de recursos ni de idioma.
  */
 data class LoginUiState(
     val email: String = "",
     val password: String = "",
-    val emailError: String? = null,
-    val passwordError: String? = null,
-    val generalError: String? = null,
+    @get:StringRes val emailErrorRes: Int? = null,
+    @get:StringRes val passwordErrorRes: Int? = null,
+    @get:StringRes val generalErrorRes: Int? = null,
     val isLoading: Boolean = false,
     val isAuthenticated: Boolean = false,
 )
@@ -33,10 +39,10 @@ data class RegisterUiState(
     val email: String = "",
     val masterPassword: String = "",
     val confirmMasterPassword: String = "",
-    val emailError: String? = null,
-    val masterPasswordError: String? = null,
-    val confirmMasterPasswordError: String? = null,
-    val generalError: String? = null,
+    @get:StringRes val emailErrorRes: Int? = null,
+    @get:StringRes val masterPasswordErrorRes: Int? = null,
+    @get:StringRes val confirmMasterPasswordErrorRes: Int? = null,
+    @get:StringRes val generalErrorRes: Int? = null,
     val isLoading: Boolean = false,
     val isAuthenticated: Boolean = false,
 )
@@ -48,9 +54,13 @@ data class RegisterUiState(
  * - Mensaje de error de login SIEMPRE genérico ("Credenciales incorrectas. Intenta de nuevo.").
  * - Limpia las contraseñas del estado al finalizar cualquier intento (éxito o fallo).
  * - Prohibido loguear contraseñas, correos o resultados de autenticación.
+ *
+ * @param ioDispatcher se inyecta para que las pruebas usen un dispatcher de test
+ *   (StandardTestDispatcher) y el flujo completo sea determinista.
  */
 class AuthViewModel(
     private val authRepository: AuthRepository,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
 
     private val _loginUiState = MutableStateFlow(LoginUiState())
@@ -63,8 +73,8 @@ class AuthViewModel(
         _loginUiState.update {
             it.copy(
                 email = email,
-                emailError = null,
-                generalError = null,
+                emailErrorRes = null,
+                generalErrorRes = null,
             )
         }
     }
@@ -73,8 +83,8 @@ class AuthViewModel(
         _loginUiState.update {
             it.copy(
                 password = password,
-                passwordError = null,
-                generalError = null,
+                passwordErrorRes = null,
+                generalErrorRes = null,
             )
         }
     }
@@ -87,8 +97,8 @@ class AuthViewModel(
             _loginUiState.update {
                 it.copy(
                     password = "", // Limpieza de contraseña por seguridad
-                    emailError = validation.emailError,
-                    passwordError = validation.passwordError,
+                    emailErrorRes = validation.emailErrorRes,
+                    passwordErrorRes = validation.passwordErrorRes,
                 )
             }
             return
@@ -97,13 +107,13 @@ class AuthViewModel(
         _loginUiState.update {
             it.copy(
                 isLoading = true,
-                emailError = null,
-                passwordError = null,
-                generalError = null,
+                emailErrorRes = null,
+                passwordErrorRes = null,
+                generalErrorRes = null,
             )
         }
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             val result = authRepository.login(validation.sanitizedEmail, currentState.password)
             when (result) {
                 is AuthResult.Success -> {
@@ -121,7 +131,7 @@ class AuthViewModel(
                         it.copy(
                             password = "", // Limpieza de contraseña por seguridad
                             isLoading = false,
-                            generalError = "Credenciales incorrectas. Intenta de nuevo.",
+                            generalErrorRes = R.string.login_error,
                         )
                     }
                 }
@@ -133,8 +143,8 @@ class AuthViewModel(
         _registerUiState.update {
             it.copy(
                 email = email,
-                emailError = null,
-                generalError = null,
+                emailErrorRes = null,
+                generalErrorRes = null,
             )
         }
     }
@@ -143,8 +153,8 @@ class AuthViewModel(
         _registerUiState.update {
             it.copy(
                 masterPassword = password,
-                masterPasswordError = null,
-                generalError = null,
+                masterPasswordErrorRes = null,
+                generalErrorRes = null,
             )
         }
     }
@@ -153,8 +163,8 @@ class AuthViewModel(
         _registerUiState.update {
             it.copy(
                 confirmMasterPassword = password,
-                confirmMasterPasswordError = null,
-                generalError = null,
+                confirmMasterPasswordErrorRes = null,
+                generalErrorRes = null,
             )
         }
     }
@@ -172,9 +182,9 @@ class AuthViewModel(
                 it.copy(
                     masterPassword = "", // Limpieza de contraseña
                     confirmMasterPassword = "", // Limpieza de contraseña
-                    emailError = validation.emailError,
-                    masterPasswordError = validation.passwordError,
-                    confirmMasterPasswordError = validation.confirmPasswordError,
+                    emailErrorRes = validation.emailErrorRes,
+                    masterPasswordErrorRes = validation.passwordErrorRes,
+                    confirmMasterPasswordErrorRes = validation.confirmPasswordErrorRes,
                 )
             }
             return
@@ -183,14 +193,14 @@ class AuthViewModel(
         _registerUiState.update {
             it.copy(
                 isLoading = true,
-                emailError = null,
-                masterPasswordError = null,
-                confirmMasterPasswordError = null,
-                generalError = null,
+                emailErrorRes = null,
+                masterPasswordErrorRes = null,
+                confirmMasterPasswordErrorRes = null,
+                generalErrorRes = null,
             )
         }
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             val result = authRepository.register(validation.sanitizedEmail, currentState.masterPassword)
             when (result) {
                 is AuthResult.Success -> {
@@ -210,7 +220,7 @@ class AuthViewModel(
                             masterPassword = "", // Limpieza de contraseña
                             confirmMasterPassword = "", // Limpieza de contraseña
                             isLoading = false,
-                            generalError = "Error al registrar la cuenta. Intenta de nuevo.",
+                            generalErrorRes = R.string.register_error,
                         )
                     }
                 }

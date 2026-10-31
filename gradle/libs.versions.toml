@@ -10,11 +10,15 @@ activityCompose = "1.9.3"
 composeBom = "2024.09.00"
 # No subir a 2.10.x: exige compileSdk/Compose más nuevos que el BOM 2024.09.00
 navigationCompose = "2.8.8"
+# Debe coincidir con la versión de kotlinx-coroutines que ya traen
+# lifecycle/activity (1.7.3). Mezclar versiones rompe los tests en JVM.
+coroutinesTest = "1.7.3"
 
 [libraries]
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
