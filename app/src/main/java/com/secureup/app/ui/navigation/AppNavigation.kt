@@ -63,24 +63,21 @@ fun AppNavigation(
                     }
                 },
                 onAuthenticated = {
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(0) { inclusive = true }
-                    }
+                    navController.navigateHome()
                 },
             )
         }
 
         composable(Routes.REGISTER) {
             RegisterScreen(
+                // Registro siempre se abre desde Login, así que popBackStack reutiliza
+                // la entrada existente. navigate + launchSingleTop no sirve: solo
+                // deduplica cuando el destino ya es el tope de la pila.
                 onLoginClick = {
-                    navController.navigate(Routes.LOGIN) {
-                        launchSingleTop = true
-                    }
+                    navController.popBackStack()
                 },
                 onAuthenticated = {
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(0) { inclusive = true }
-                    }
+                    navController.navigateHome()
                 },
             )
         }
@@ -88,5 +85,20 @@ fun AppNavigation(
         composable(Routes.HOME) {
             HomeScreen()
         }
+    }
+}
+
+/**
+ * Navega al Dashboard dejando la pila vacía, para que "atrás" salga de la app
+ * en vez de volver al formulario de acceso.
+ *
+ * `popUpTo(graph.id)` con `inclusive = true` limpia toda la pila. Se usa el id
+ * del grafo y no un `0` literal porque el 0 solo coincide mientras el `NavHost`
+ * no tenga `route`; si algún día se le asigna, el `0` deja de encontrar nada y
+ * la pila no se limpia.
+ */
+private fun NavHostController.navigateHome() {
+    navigate(Routes.HOME) {
+        popUpTo(graph.id) { inclusive = true }
     }
 }
