@@ -48,7 +48,6 @@ import com.secureup.app.ui.theme.SecureUPTheme
 import com.secureup.app.ui.theme.SecureUpColors
 import com.secureup.app.ui.theme.Spacing
 
-/** Métricas internas del campo. Fuente: Figma "TextField" (nodo 87:216). No están en la escala Spacing. */
 private val FieldVerticalPadding = 14.dp
 private val FieldBorderWidth = 1.dp
 private val LabelBottomGap = 6.dp
@@ -56,21 +55,6 @@ private val EyeIconSize = 20.dp
 private val EyeTouchTargetSize = 48.dp
 private val ErrorIconSize = 16.dp
 
-/**
- * Campo de texto de SecureUP, con etiqueta arriba.
- *
- * Estados (Figma):
- *  - Normal: fondo SurfaceVariant, borde SurfaceVariant (no visible), borde/etiqueta en TextSecondary.
- *  - Enfocado: borde Primary.
- *  - Error: borde Danger + mensaje con ícono de alerta debajo.
- *  - Contraseña: transformación visual + ícono de ojo para mostrar/ocultar.
- *
- * @param placeholder texto de ayuda que se muestra cuando el campo está vacío (extra, no estaba
- *        en la firma original, pero el diseño de login lo usa).
- * @param keyboardOptions configuración del teclado (tipo, acción). Permite encadenar campos.
- * @param keyboardActions qué hacer con la acción del teclado (Siguiente, Listo…).
- * @param interactionSource permite simular el estado "focused" en los @Preview.
- */
 @Composable
 fun SecureUpTextField(
     label: String,
@@ -79,6 +63,7 @@ fun SecureUpTextField(
     modifier: Modifier = Modifier,
     isPassword: Boolean = false,
     errorMessage: String? = null,
+    error: String? = null,
     placeholder: String? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -86,7 +71,7 @@ fun SecureUpTextField(
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
-    val errorText = errorMessage
+    val errorText = error ?: errorMessage
 
     val borderColor = when {
         errorText != null -> SecureUpColors.Danger
@@ -134,7 +119,6 @@ fun SecureUpTextField(
                     modifier = Modifier
                         .fillMaxWidth()
                         .semantics {
-                            // TalkBack anuncia el campo como "no válido" con este mensaje.
                             if (errorText != null) this.error(errorText)
                         },
                     singleLine = true,
@@ -152,7 +136,6 @@ fun SecureUpTextField(
             }
 
             if (isPassword) {
-                // IconButton garantiza un área táctil de 48 dp; el ícono visual se queda en 20 dp.
                 IconButton(
                     onClick = { passwordVisible = !passwordVisible },
                     modifier = Modifier.size(EyeTouchTargetSize),
@@ -192,57 +175,4 @@ fun SecureUpTextField(
             }
         }
     }
-}
-
-@Preview(name = "SecureUpTextField - todos los estados")
-@Composable
-private fun SecureUpTextFieldPreview() {
-    SecureUPTheme {
-        Column(
-            modifier = Modifier
-                .background(SecureUpColors.Background)
-                .padding(Spacing.L),
-            verticalArrangement = Arrangement.spacedBy(Spacing.Xl),
-        ) {
-            SecureUpTextField(
-                label = "Correo electrónico",
-                value = "",
-                onValueChange = {},
-                placeholder = "usuario@correo.com",
-            )
-            SecureUpTextField(
-                label = "Correo electrónico",
-                value = "ana@secureup.app",
-                onValueChange = {},
-            )
-            SecureUpFocusedFieldPreview()
-            SecureUpTextField(
-                label = "Contraseña maestra",
-                value = "secreta123",
-                onValueChange = {},
-                isPassword = true,
-            )
-            SecureUpTextField(
-                label = "Contraseña maestra",
-                value = "",
-                onValueChange = {},
-                isPassword = true,
-                errorMessage = "Credenciales incorrectas. Intenta de nuevo.",
-            )
-        }
-    }
-}
-
-/** Muestra el estado "focused" emitiendo una interacción de foco. */
-@Composable
-private fun SecureUpFocusedFieldPreview() {
-    val source = remember { MutableInteractionSource() }
-    LaunchedEffect(source) { source.emit(FocusInteraction.Focus()) }
-    SecureUpTextField(
-        label = "Campo enfocado",
-        value = "",
-        onValueChange = {},
-        placeholder = "Foco",
-        interactionSource = source,
-    )
 }

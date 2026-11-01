@@ -31,17 +31,34 @@ import com.secureup.app.ui.theme.Spacing
 
 enum class BottomBarDestination { Home, Vault, Scanner, Profile }
 
-/**
- * Barra inferior de navegación de SecureUP.
- * 4 destinos: Inicio, Bóveda, Escáner, Perfil.
- * Destino activo en Primary con indicador de punto arriba del ícono.
- */
 @Composable
 fun SecureUpBottomBar(
     modifier: Modifier = Modifier,
     currentDestination: BottomBarDestination = BottomBarDestination.Home,
     onDestinationSelected: (BottomBarDestination) -> Unit = {},
+    currentRoute: String? = null,
+    onNavigate: ((String) -> Unit)? = null,
 ) {
+    val activeDestination = when (currentRoute) {
+        "home" -> BottomBarDestination.Home
+        "vault" -> BottomBarDestination.Vault
+        "scanner" -> BottomBarDestination.Scanner
+        "profile" -> BottomBarDestination.Profile
+        else -> currentDestination
+    }
+
+    val handleSelect: (BottomBarDestination) -> Unit = { dest ->
+        onDestinationSelected(dest)
+        onNavigate?.invoke(
+            when (dest) {
+                BottomBarDestination.Home -> "home"
+                BottomBarDestination.Vault -> "vault"
+                BottomBarDestination.Scanner -> "scanner"
+                BottomBarDestination.Profile -> "profile"
+            }
+        )
+    }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -54,26 +71,26 @@ fun SecureUpBottomBar(
         BottomBarItem(
             label = stringResource(id = R.string.nav_home),
             iconRes = R.drawable.ic_home,
-            isSelected = currentDestination == BottomBarDestination.Home,
-            onClick = { onDestinationSelected(BottomBarDestination.Home) },
+            isSelected = activeDestination == BottomBarDestination.Home,
+            onClick = { handleSelect(BottomBarDestination.Home) },
         )
         BottomBarItem(
             label = stringResource(id = R.string.nav_vault),
             iconRes = R.drawable.ic_shield,
-            isSelected = currentDestination == BottomBarDestination.Vault,
-            onClick = { onDestinationSelected(BottomBarDestination.Vault) },
+            isSelected = activeDestination == BottomBarDestination.Vault,
+            onClick = { handleSelect(BottomBarDestination.Vault) },
         )
         BottomBarItem(
             label = stringResource(id = R.string.nav_scanner),
             iconRes = R.drawable.ic_qr_code,
-            isSelected = currentDestination == BottomBarDestination.Scanner,
-            onClick = { onDestinationSelected(BottomBarDestination.Scanner) },
+            isSelected = activeDestination == BottomBarDestination.Scanner,
+            onClick = { handleSelect(BottomBarDestination.Scanner) },
         )
         BottomBarItem(
             label = stringResource(id = R.string.nav_profile),
             iconRes = R.drawable.ic_user,
-            isSelected = currentDestination == BottomBarDestination.Profile,
-            onClick = { onDestinationSelected(BottomBarDestination.Profile) },
+            isSelected = activeDestination == BottomBarDestination.Profile,
+            onClick = { handleSelect(BottomBarDestination.Profile) },
         )
     }
 }
@@ -91,7 +108,6 @@ private fun BottomBarItem(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            // `selectable` en vez de `clickable`: TalkBack anuncia "pestaña, seleccionada".
             .selectable(
                 selected = isSelected,
                 onClick = onClick,
@@ -99,7 +115,6 @@ private fun BottomBarItem(
             )
             .padding(horizontal = Spacing.M, vertical = Spacing.Xs),
     ) {
-        // Punto indicador sobre el ícono activo
         if (isSelected) {
             Box(
                 modifier = Modifier

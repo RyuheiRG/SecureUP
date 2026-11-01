@@ -9,6 +9,9 @@ import androidx.activity.enableEdgeToEdge
 import com.secureup.app.ui.navigation.AppNavigation
 import com.secureup.app.ui.theme.SecureUPTheme
 
+/**
+ * Actividad principal de SecureUP.
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

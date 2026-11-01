@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,45 +37,37 @@ import com.secureup.app.ui.theme.Spacing
 /** Variantes del botón. Fuente: Figma "Button" (nodos 4:102 a 4:118). */
 enum class SecureUpButtonVariant { Primary, Secondary, Danger }
 
-/** Padding vertical del botón (Figma: 14 px). No está en la escala Spacing. */
-private val ButtonVerticalPadding = 14.dp
+typealias ButtonStyle = SecureUpButtonVariant
 
-/** Grosor del borde del botón secundario. */
+private val ButtonVerticalPadding = 14.dp
 private val ButtonBorderWidth = 1.dp
 
-/**
- * Botón principal de SecureUP.
- *
- * Colores, radio y estados confirmados en Figma (nodo "Button" 4:120):
- *  - Primary y Danger: relleno con el token del color y texto OnPrimary.
- *  - Secondary: relleno SurfaceVariant, borde Outline y texto TextPrimary.
- *  - Estados por opacidad: normal 100 %, pressed 80 %, disabled 40 %.
- *
- * @param interactionSource permite simular el estado "pressed" en los @Preview.
- */
 @Composable
 fun SecureUpButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     variant: SecureUpButtonVariant = SecureUpButtonVariant.Primary,
+    style: SecureUpButtonVariant = variant,
     enabled: Boolean = true,
+    isLoading: Boolean = false,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
+    val effectiveVariant = if (style != SecureUpButtonVariant.Primary) style else variant
     val pressed by interactionSource.collectIsPressedAsState()
 
-    val containerColor = when (variant) {
+    val containerColor = when (effectiveVariant) {
         SecureUpButtonVariant.Primary -> SecureUpColors.Primary
         SecureUpButtonVariant.Secondary -> SecureUpColors.SurfaceVariant
         SecureUpButtonVariant.Danger -> SecureUpColors.Danger
     }
-    val contentColor = if (variant == SecureUpButtonVariant.Secondary) {
+    val contentColor = if (effectiveVariant == SecureUpButtonVariant.Secondary) {
         SecureUpColors.TextPrimary
     } else {
         SecureUpColors.OnPrimary
     }
     val opacity = when {
-        !enabled -> 0.4f
+        !enabled || isLoading -> 0.4f
         pressed -> 0.8f
         else -> 1f
     }
@@ -85,7 +79,7 @@ fun SecureUpButton(
             .clip(shape)
             .background(containerColor, shape)
             .then(
-                if (variant == SecureUpButtonVariant.Secondary) {
+                if (effectiveVariant == SecureUpButtonVariant.Secondary) {
                     Modifier.border(ButtonBorderWidth, SecureUpColors.Outline, shape)
                 } else {
                     Modifier
@@ -93,68 +87,27 @@ fun SecureUpButton(
             )
             .clickable(
                 interactionSource = interactionSource,
-                indication = null, // el feedback de "pressed" es la opacidad, no un ripple
-                enabled = enabled,
-                role = Role.Button, // TalkBack lo anuncia como botón, no como texto pulsable
+                indication = null,
+                enabled = enabled && !isLoading,
+                role = Role.Button,
                 onClick = onClick,
             )
             .padding(horizontal = Spacing.Xl, vertical = ButtonVerticalPadding),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge,
-            color = contentColor,
-            textAlign = TextAlign.Center,
-        )
-    }
-}
-
-@Preview(name = "SecureUpButton - todos los estados")
-@Composable
-private fun SecureUpButtonPreview() {
-    SecureUPTheme {
-        Column(
-            modifier = Modifier
-                .background(SecureUpColors.Background)
-                .padding(Spacing.L),
-            verticalArrangement = Arrangement.spacedBy(Spacing.M),
-        ) {
-            SecureUpButtonVariant.entries.forEach { variant ->
-                Text(
-                    text = variant.name,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = SecureUpColors.TextSecondary,
-                )
-                SecureUpButton(
-                    text = "Normal",
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth(),
-                    variant = variant,
-                )
-                SecureUpPressedButtonPreview(variant)
-                SecureUpButton(
-                    text = "Deshabilitado",
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth(),
-                    variant = variant,
-                    enabled = false,
-                )
-            }
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = contentColor,
+                strokeWidth = 2.dp,
+            )
+        } else {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge,
+                color = contentColor,
+                textAlign = TextAlign.Center,
+            )
         }
     }
-}
-
-/** Muestra el estado "pressed" emitiendo una interacción de presión. */
-@Composable
-private fun SecureUpPressedButtonPreview(variant: SecureUpButtonVariant) {
-    val source = remember { MutableInteractionSource() }
-    LaunchedEffect(source) { source.emit(PressInteraction.Press(Offset.Zero)) }
-    SecureUpButton(
-        text = "Pressed",
-        onClick = {},
-        modifier = Modifier.fillMaxWidth(),
-        variant = variant,
-        interactionSource = source,
-    )
 }
