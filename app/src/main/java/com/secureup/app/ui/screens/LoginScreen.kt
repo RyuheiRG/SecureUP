@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,11 +52,17 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.loginUiState.collectAsStateWithLifecycle()
 
+    // La navegación se dispara desde la pantalla (hilo principal), no desde el
+    // ViewModel: `login()` corre en ioDispatcher y NavController no es thread-safe.
+    LaunchedEffect(uiState.isAuthenticated) {
+        if (uiState.isAuthenticated) onAuthenticated()
+    }
+
     LoginScreenContent(
         uiState = uiState,
         onEmailChange = viewModel::onLoginEmailChanged,
         onPasswordChange = viewModel::onLoginPasswordChanged,
-        onLoginSubmit = { viewModel.login(onSuccess = onAuthenticated) },
+        onLoginSubmit = viewModel::login,
         onRegisterClick = onRegisterClick,
     )
 }
