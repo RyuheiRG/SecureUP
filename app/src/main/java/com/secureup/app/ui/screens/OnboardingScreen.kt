@@ -22,7 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,7 +49,8 @@ fun OnboardingScreen(
     initialPage: Int = 0,
     onFinish: () -> Unit = {},
 ) {
-    var currentPage by remember { mutableIntStateOf(initialPage) }
+    // rememberSaveable: al rotar o recrear la actividad se mantiene la página.
+    var currentPage by rememberSaveable { mutableIntStateOf(initialPage) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
