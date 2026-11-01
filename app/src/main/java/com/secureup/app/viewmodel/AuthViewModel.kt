@@ -55,6 +55,10 @@ data class RegisterUiState(
  * - Limpia las contraseñas del estado al finalizar cualquier intento (éxito o fallo).
  * - Prohibido loguear contraseñas, correos o resultados de autenticación.
  *
+ * La navegación NO se hace aquí: el ViewModel solo publica `isAuthenticated` y la
+ * pantalla reacciona en el hilo principal. Así no se toca el NavController desde
+ * `ioDispatcher`.
+ *
  * @param ioDispatcher se inyecta para que las pruebas usen un dispatcher de test
  *   (StandardTestDispatcher) y el flujo completo sea determinista.
  */
@@ -89,7 +93,7 @@ class AuthViewModel(
         }
     }
 
-    fun login(onSuccess: () -> Unit = {}) {
+    fun login() {
         val currentState = _loginUiState.value
         val validation = AuthValidator.validateLogin(currentState.email, currentState.password)
 
@@ -124,7 +128,6 @@ class AuthViewModel(
                             isAuthenticated = true,
                         )
                     }
-                    onSuccess()
                 }
                 is AuthResult.Failure -> {
                     _loginUiState.update {
@@ -169,7 +172,7 @@ class AuthViewModel(
         }
     }
 
-    fun register(onSuccess: () -> Unit = {}) {
+    fun register() {
         val currentState = _registerUiState.value
         val validation = AuthValidator.validateRegister(
             currentState.email,
@@ -212,7 +215,6 @@ class AuthViewModel(
                             isAuthenticated = true,
                         )
                     }
-                    onSuccess()
                 }
                 is AuthResult.Failure -> {
                     _registerUiState.update {

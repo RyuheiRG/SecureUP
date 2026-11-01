@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,12 +53,17 @@ fun RegisterScreen(
 ) {
     val uiState by viewModel.registerUiState.collectAsStateWithLifecycle()
 
+    // Igual que en Login: la navegación sale de la pantalla, no del ViewModel.
+    LaunchedEffect(uiState.isAuthenticated) {
+        if (uiState.isAuthenticated) onAuthenticated()
+    }
+
     RegisterScreenContent(
         uiState = uiState,
         onEmailChange = viewModel::onRegisterEmailChanged,
         onMasterPasswordChange = viewModel::onRegisterMasterPasswordChanged,
         onConfirmMasterPasswordChange = viewModel::onRegisterConfirmPasswordChanged,
-        onRegisterSubmit = { viewModel.register(onSuccess = onAuthenticated) },
+        onRegisterSubmit = viewModel::register,
         onLoginClick = onLoginClick,
     )
 }

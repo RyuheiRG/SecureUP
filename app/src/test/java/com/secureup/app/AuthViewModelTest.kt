@@ -47,12 +47,11 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun login_withValidCredentials_setsLoadingThenAuthenticates_andInvokesCallback() = runTest(dispatcher) {
-        var callbackCalled = false
+    fun login_withValidCredentials_setsLoadingThenAuthenticates() = runTest(dispatcher) {
         viewModel.onLoginEmailChanged("  usuario@correo.com  ")
         viewModel.onLoginPasswordChanged("contrasenaSegura123")
 
-        viewModel.login(onSuccess = { callbackCalled = true })
+        viewModel.login()
 
         // Aún no se avanzó el dispatcher: el estado intermedio debe ser "cargando".
         assertTrue(viewModel.loginUiState.value.isLoading)
@@ -63,7 +62,6 @@ class AuthViewModelTest {
         assertFalse(state.isLoading)
         assertTrue(state.isAuthenticated)
         assertEquals("", state.password)
-        assertTrue(callbackCalled)
         assertEquals(1, repository.loginCalls)
         assertEquals("usuario@correo.com", repository.lastLoginEmail)
     }

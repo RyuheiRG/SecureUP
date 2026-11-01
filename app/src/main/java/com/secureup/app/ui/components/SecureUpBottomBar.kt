@@ -114,7 +114,9 @@ private fun BottomBarItem(
 
         Icon(
             painter = painterResource(id = iconRes),
-            contentDescription = label,
+            // `null`: la etiqueta ya la aporta el Text de abajo. Con las dos, TalkBack
+            // anuncia "Inicio, Inicio" porque `selectable` fusiona los descendientes.
+            contentDescription = null,
             tint = if (isSelected) activeColor else inactiveColor,
             modifier = Modifier.size(20.dp),
         )
