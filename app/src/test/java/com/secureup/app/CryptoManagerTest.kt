@@ -135,6 +135,68 @@ class CryptoManagerTest {
         assertFalse(text.contains(keys.vaultKey.encoded.toHex()))
     }
 
+    // --- Vectores conocidos (RFC 7914 §11) -----------------------------------
+
+    /**
+     * Única prueba que verifica el algoritmo en sí: si alguien cambia
+     * `PBKDF2WithHmacSHA256` por SHA-1 o ignora las iteraciones, las pruebas de
+     * consistencia siguen en verde pero esta falla.
+     *
+     * PBKDF2 define `DK = T1 || T2 || ...`, así que los primeros 32 bytes de la
+     * salida de 64 son exactamente la salida de 32: se compara con la mitad.
+     */
+    @Test
+    fun deriveKeys_matchesRfc7914Vector1() {
+        val result = crypto.deriveKeys(
+            masterPassword = "passwd".toCharArray(),
+            saltAuth = "salt".toByteArray(),
+            saltVault = "vault".toByteArray(),
+            params = KdfParams(iterations = 1),
+        )
+
+        assertEquals(
+            "55ac046e56e3089fec1691c22544b605f94185216dde0465e68b9d57c20dacbc",
+            result.authHash.toHex(),
+        )
+    }
+
+    /**
+     * Segundo vector del RFC 7914 §11, con 80 000 iteraciones: este sí detecta
+     * que el parámetro de iteraciones se aplica de verdad (el de `c=1` no).
+     */
+    @Test
+    fun deriveKeys_matchesRfc7914Vector2() {
+        val result = crypto.deriveKeys(
+            masterPassword = "Password".toCharArray(),
+            saltAuth = "NaCl".toByteArray(),
+            saltVault = "vault".toByteArray(),
+            params = KdfParams(iterations = 80_000),
+        )
+
+        assertEquals(
+            "4ddcd8f60b98be21830cee5ef22701f9641a4418d04c0414aeff08876b34ab56",
+            result.authHash.toHex(),
+        )
+    }
+
+    @Test
+    fun deriveKeys_normalizesPasswordToNfc() {
+        // "contraseña" precompuesta (NFC) contra "contrasen" + tilde combinante
+        // + "a" (NFD). Sin normalizar dan hashes distintos y el usuario perdería
+        // el acceso a su bóveda al cambiar de teclado.
+        val nfc = "contrase\u00F1a"
+        val nfd = "contrasen\u0303a"
+
+        val fromNfc = crypto.deriveKeys(nfc.toCharArray(), "salt".toByteArray(), "vault".toByteArray(), KdfParams(iterations = 1000))
+        val fromNfd = crypto.deriveKeys(nfd.toCharArray(), "salt".toByteArray(), "vault".toByteArray(), KdfParams(iterations = 1000))
+
+        assertEquals(
+            "f56f642ed03baf4162846ebc71daa3dd06966e88bb686d5f4c403640ca76d3ca",
+            fromNfc.authHash.toHex(),
+        )
+        assertArrayEquals("NFD y NFC deben derivar la misma clave", fromNfc.authHash, fromNfd.authHash)
+    }
+
     // --- Cifrado / descifrado -------------------------------------------------
 
     @Test
@@ -183,27 +245,21 @@ class CryptoManagerTest {
     }
 
     @Test
-    fun decrypt_withTamperedTag_throws() {
-        val blob = crypto.encrypt("datos sensibles", key)
-        blob[blob.lastIndex] = (blob[blob.lastIndex].toInt() xor 0x01).toByte()
+    fun decrypt_failsWhenAnyByteOfTheBlobIsAltered() {
+        val aad = "entrada-1".toByteArray()
+        val blob = crypto.encrypt("datos sensibles", key, aad = aad)
 
-        assertThrows(CryptoException::class.java) { crypto.decrypt(blob, key) }
-    }
+        blob.indices.forEach { index ->
+            val tampered = blob.copyOf()
+            tampered[index] = (tampered[index].toInt() xor 0x01).toByte()
 
-    @Test
-    fun decrypt_withTamperedPayloadByte_throws() {
-        val blob = crypto.encrypt("datos sensibles", key)
-        blob[CryptoManager.NONCE_SIZE + 1] = (blob[CryptoManager.NONCE_SIZE + 1].toInt() xor 0x01).toByte()
-
-        assertThrows(CryptoException::class.java) { crypto.decrypt(blob, key) }
-    }
-
-    @Test
-    fun decrypt_withTamperedNonce_throws() {
-        val blob = crypto.encrypt("datos sensibles", key)
-        blob[1] = (blob[1].toInt() xor 0x01).toByte()
-
-        assertThrows(CryptoException::class.java) { crypto.decrypt(blob, key) }
+            assertThrows(
+                "alterar el byte $index debería fallar",
+                CryptoException::class.java,
+            ) {
+                crypto.decrypt(tampered, key, aad = aad)
+            }
+        }
     }
 
     @Test
