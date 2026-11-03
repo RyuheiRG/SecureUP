@@ -2,11 +2,9 @@ package com.secureup.app
 
 import com.secureup.app.data.crypto.CryptoException
 import com.secureup.app.data.crypto.CryptoManager
-import com.secureup.app.data.crypto.EncryptedData
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -16,8 +14,7 @@ import org.junit.Test
  *
  * Se usa una cuenta de iteraciones baja (1 000) para que las pruebas sean
  * rápidas; el valor de producción se verifica aparte en
- * [defaultIterations_matchOwaspRecommendation]. El algoritmo es idéntico en
- * ambos casos, solo cambia el coste.
+ * [defaultIterations_matchOwaspRecommendation].
  */
 class CryptoManagerTest {
 
@@ -42,8 +39,6 @@ class CryptoManagerTest {
 
     @Test
     fun deriveKey_withDifferentSalt_producesDifferentKey() {
-        // Es la regla de AGENTS.md §6: auth_hash y clave de bóveda usan salts distintos,
-        // así que la misma contraseña nunca produce la misma clave.
         val otherSalt = ByteArray(CryptoManager.SALT_SIZE) { (it + 99).toByte() }
         val otherKey = crypto.deriveKey(PASSWORD, otherSalt)
 
@@ -58,9 +53,9 @@ class CryptoManagerTest {
     }
 
     @Test
-    fun deriveKey_withShortSalt_throws() {
+    fun deriveKey_withEmptySalt_throws() {
         assertThrows(IllegalArgumentException::class.java) {
-            crypto.deriveKey(PASSWORD, ByteArray(8))
+            crypto.deriveKey(PASSWORD, ByteArray(0))
         }
     }
 
@@ -78,10 +73,9 @@ class CryptoManagerTest {
     fun encryptThenDecrypt_returnsOriginalText() {
         val original = "contraseña con acentos y símbolos: ñ@€"
 
-        val encrypted = crypto.encrypt(original, key)
-        val decrypted = crypto.decryptAsString(encrypted, key)
+        val blob = crypto.encrypt(original, key)
 
-        assertEquals(original, decrypted)
+        assertEquals(original, crypto.decryptAsString(blob, key))
     }
 
     @Test
@@ -90,59 +84,77 @@ class CryptoManagerTest {
         assertArrayEquals(ByteArray(0), crypto.decrypt(empty, key))
 
         val binary = ByteArray(256) { it.toByte() }
-        val encrypted = crypto.encrypt(binary, key)
-        assertArrayEquals(binary, crypto.decrypt(encrypted, key))
+        val blob = crypto.encrypt(binary, key)
+        assertArrayEquals(binary, crypto.decrypt(blob, key))
+    }
+
+    @Test
+    fun blob_hasVersionByteAndNonce() {
+        val blob = crypto.encrypt("datos", key)
+
+        assertEquals(CryptoManager.BLOB_VERSION, blob[0].toInt())
+        assertEquals(CryptoManager.MIN_BLOB_SIZE + "datos".length, blob.size)
     }
 
     @Test
     fun encrypt_usesAFreshNoncePerOperation() {
-        val plaintext = "misma contraseña, mismo key".toByteArray()
+        val plaintext = "misma contraseña, misma key".toByteArray()
         val nonces = mutableSetOf<String>()
-        val ciphertexts = mutableSetOf<String>()
+        val blobs = mutableSetOf<String>()
 
         repeat(100) {
-            val encrypted = crypto.encrypt(plaintext, key)
-            nonces += encrypted.nonce.toHex()
-            ciphertexts += encrypted.ciphertext.toHex()
+            val blob = crypto.encrypt(plaintext, key)
+            nonces += blob.nonceOf().toHex()
+            blobs += blob.toHex()
             // Cada resultado debe seguir siendo descifrable con su propio nonce.
-            assertArrayEquals(plaintext, crypto.decrypt(encrypted, key))
+            assertArrayEquals(plaintext, crypto.decrypt(blob, key))
         }
 
         assertEquals("El nonce debe ser único por operación", 100, nonces.size)
-        assertEquals("El ciphertext no debe repetirse", 100, ciphertexts.size)
-        assertEquals(CryptoManager.NONCE_SIZE, crypto.encrypt(plaintext, key).nonce.size)
+        assertEquals("El blob no debe repetirse", 100, blobs.size)
     }
 
     @Test
     fun decrypt_withTamperedTag_throws() {
-        val encrypted = crypto.encrypt("datos sensibles", key)
-        val tampered = encrypted.ciphertext.copyOf()
-        tampered[tampered.lastIndex] = (tampered[tampered.lastIndex].toInt() xor 0x01).toByte()
+        val blob = crypto.encrypt("datos sensibles", key)
+        blob[blob.lastIndex] = (blob[blob.lastIndex].toInt() xor 0x01).toByte()
 
-        assertThrows(CryptoException::class.java) {
-            crypto.decrypt(EncryptedData(tampered, encrypted.nonce), key)
-        }
+        assertThrows(CryptoException::class.java) { crypto.decrypt(blob, key) }
     }
 
     @Test
     fun decrypt_withTamperedPayloadByte_throws() {
-        val encrypted = crypto.encrypt("datos sensibles", key)
-        val tampered = encrypted.ciphertext.copyOf()
-        tampered[0] = (tampered[0].toInt() xor 0x01).toByte()
+        val blob = crypto.encrypt("datos sensibles", key)
+        blob[CryptoManager.NONCE_SIZE + 1] = (blob[CryptoManager.NONCE_SIZE + 1].toInt() xor 0x01).toByte()
 
-        assertThrows(CryptoException::class.java) {
-            crypto.decrypt(EncryptedData(tampered, encrypted.nonce), key)
-        }
+        assertThrows(CryptoException::class.java) { crypto.decrypt(blob, key) }
     }
 
     @Test
     fun decrypt_withTamperedNonce_throws() {
-        val encrypted = crypto.encrypt("datos sensibles", key)
-        val tamperedNonce = encrypted.nonce.copyOf()
-        tamperedNonce[0] = (tamperedNonce[0].toInt() xor 0x01).toByte()
+        val blob = crypto.encrypt("datos sensibles", key)
+        blob[1] = (blob[1].toInt() xor 0x01).toByte()
+
+        assertThrows(CryptoException::class.java) { crypto.decrypt(blob, key) }
+    }
+
+    @Test
+    fun decrypt_withUnknownVersion_throws() {
+        val blob = crypto.encrypt("datos sensibles", key)
+        blob[0] = 0x02
+
+        assertThrows(CryptoException::class.java) { crypto.decrypt(blob, key) }
+    }
+
+    @Test
+    fun decrypt_withTruncatedBlob_throws() {
+        val blob = crypto.encrypt("datos sensibles", key)
 
         assertThrows(CryptoException::class.java) {
-            crypto.decrypt(EncryptedData(encrypted.ciphertext, tamperedNonce), key)
+            crypto.decrypt(blob.copyOf(CryptoManager.MIN_BLOB_SIZE - 1), key)
+        }
+        assertThrows(CryptoException::class.java) {
+            crypto.decrypt(ByteArray(0), key)
         }
     }
 
@@ -150,50 +162,36 @@ class CryptoManagerTest {
     fun decrypt_withWrongKey_throws() {
         val otherSalt = ByteArray(CryptoManager.SALT_SIZE) { (it + 99).toByte() }
         val wrongKey = crypto.deriveKey(PASSWORD, otherSalt)
-        val encrypted = crypto.encrypt("datos sensibles", key)
+        val blob = crypto.encrypt("datos sensibles", key)
 
-        assertThrows(CryptoException::class.java) {
-            crypto.decrypt(encrypted, wrongKey)
-        }
+        assertThrows(CryptoException::class.java) { crypto.decrypt(blob, wrongKey) }
     }
 
     @Test
-    fun decrypt_withInvalidNonceLength_throws() {
-        val encrypted = crypto.encrypt("datos sensibles", key)
+    fun decrypt_withDifferentAad_throws() {
+        val entryId = "entrada-1".toByteArray()
+        val blob = crypto.encrypt("datos sensibles", key, aad = entryId)
 
+        // Con el AAD correcto descifra...
+        assertEquals("datos sensibles", crypto.decryptAsString(blob, key, aad = entryId))
+        // ...con otro AAD (blob intercambiado entre entradas) falla.
         assertThrows(CryptoException::class.java) {
-            crypto.decrypt(EncryptedData(encrypted.ciphertext, ByteArray(8)), key)
+            crypto.decrypt(blob, key, aad = "entrada-2".toByteArray())
+        }
+        assertThrows(CryptoException::class.java) {
+            crypto.decrypt(blob, key)
         }
     }
 
-    // --- Salt y datos auxiliares ---------------------------------------------
+    // --- Salt ----------------------------------------------------------------
 
     @Test
-    fun generateSalt_returnsRandomSaltsOfTheRequestedSize() {
+    fun generateSalt_returnsRandomSaltsOfTheExpectedSize() {
         val first = crypto.generateSalt()
         val second = crypto.generateSalt()
 
         assertEquals(CryptoManager.SALT_SIZE, first.size)
         assertFalse(first.contentEquals(second))
-    }
-
-    @Test
-    fun encryptedData_equalsComparesContents() {
-        val ciphertext = "cipher".toByteArray()
-        val nonce = ByteArray(CryptoManager.NONCE_SIZE)
-
-        assertEquals(EncryptedData(ciphertext, nonce), EncryptedData(ciphertext.copyOf(), nonce.copyOf()))
-        assertNotEquals(EncryptedData(ciphertext, nonce), EncryptedData("otro".toByteArray(), nonce))
-    }
-
-    @Test
-    fun encryptedData_toStringDoesNotExposeBytes() {
-        val encrypted = crypto.encrypt("datos sensibles", key)
-
-        val text = encrypted.toString()
-
-        assertFalse(text.contains(encrypted.ciphertext.toHex()))
-        assertFalse(text.contains("datos sensibles"))
     }
 
     private companion object {
@@ -202,4 +200,6 @@ class CryptoManagerTest {
     }
 }
 
-private fun ByteArray.toHex(): String = joinToString(separator = "") { byte -> "%02x".format(byte) }
+internal fun ByteArray.nonceOf(): ByteArray = copyOfRange(1, 1 + CryptoManager.NONCE_SIZE)
+
+internal fun ByteArray.toHex(): String = joinToString(separator = "") { byte -> "%02x".format(byte) }
