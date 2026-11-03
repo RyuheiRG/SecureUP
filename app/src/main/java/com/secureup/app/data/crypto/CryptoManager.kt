@@ -2,6 +2,7 @@ package com.secureup.app.data.crypto
 
 import java.security.GeneralSecurityException
 import java.security.SecureRandom
+import java.text.Normalizer
 import javax.crypto.AEADBadTagException
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
@@ -16,6 +17,46 @@ import javax.crypto.spec.SecretKeySpec
  * el contenido cifrado.
  */
 class CryptoException(message: String, cause: Throwable? = null) : Exception(message, cause)
+
+/**
+ * Parámetros del KDF tal como los publica el servidor (`/api/auth/salt`).
+ *
+ * Se reciben del exterior, así que son datos **no confiables**: el cliente
+ * rechaza cualquier `iterations` por debajo de
+ * [CryptoManager.MIN_ACCEPTED_ITERATIONS], para que un servidor comprometido no
+ * pueda degradar la derivación a un coste ridículo.
+ *
+ * @param version versión del algoritmo de derivación (1 = PBKDF2-HMAC-SHA256).
+ * @param iterations iteraciones de PBKDF2 con las que se derivaron las claves.
+ */
+data class KdfParams(
+    val version: Int = CURRENT_VERSION,
+    val iterations: Int = CryptoManager.DEFAULT_ITERATIONS,
+) {
+    companion object {
+        /** Única versión implementada hoy. */
+        const val CURRENT_VERSION = 1
+    }
+}
+
+/**
+ * Resultado de derivar las dos claves de la sesión.
+ *
+ * - [authHash] va al servidor como prueba de autenticación; el backend lo vuelve
+ *   a hashear (bcrypt/Argon2id) antes de guardarlo.
+ * - [vaultKey] **nunca sale del dispositivo**: cifra las entradas de la bóveda.
+ *
+ * El llamador debe borrar [authHash] con `fill(0)` en cuanto lo envíe. [vaultKey]
+ * vive en memoria mientras dure la sesión y se descarta al cerrar sesión.
+ */
+class DerivedKeys(
+    val authHash: ByteArray,
+    val vaultKey: SecretKey,
+) {
+    /** No imprime material de clave: esto puede acabar en un log. */
+    override fun toString(): String =
+        "DerivedKeys(authHash=${authHash.size} bytes, vaultKey=<redacted>)"
+}
 
 /**
  * Cifrado y derivación de claves de SecureUP.
@@ -36,6 +77,9 @@ class CryptoException(message: String, cause: Throwable? = null) : Exception(mes
  *
  * - **PBKDF2WithHmacSHA256**, 600 000 iteraciones: valor recomendado por OWASP
  *   para PBKDF2-HMAC-SHA256. `PBKDF2WithHmacSHA256` existe desde API 26.
+ * - **Dos derivaciones independientes** de la contraseña maestra, con salts
+ *   distintos: `authHash` (lo ve el servidor) y `vaultKey` (no sale del
+ *   dispositivo).
  * - **AES-256-GCM** con nonce aleatorio de 12 bytes por operación, generado con
  *   [SecureRandom]. Reutilizar un nonce con la misma clave rompe GCM por completo.
  * - **AAD**: se cifra con datos asociados para atar el blob a su contexto. En la
@@ -45,16 +89,17 @@ class CryptoException(message: String, cause: Throwable? = null) : Exception(mes
  * - Esta clase **no persiste nada**.
  *
  * @param secureRandom inyectable solo para pruebas; en producción va el default.
- * @param defaultIterations iteraciones de PBKDF2 cuando no se pasan explícitas.
+ * @param minIterations mínimo aceptado de `KdfParams.iterations`. Los tests lo
+ *   bajan para no pagar 600 000 iteraciones en cada caso.
  */
 class CryptoManager(
     private val secureRandom: SecureRandom = SecureRandom(),
-    private val defaultIterations: Int = DEFAULT_ITERATIONS,
+    private val minIterations: Int = MIN_ACCEPTED_ITERATIONS,
 ) {
 
     /**
-     * Genera un salt aleatorio para PBKDF2. Cada derivación (autenticación y
-     * bóveda) debe usar su **propio** salt.
+     * Genera un salt aleatorio de 16 bytes. `salt_auth` y `salt_vault` deben ser
+     * distintos entre sí y entre usuarios.
      */
     fun generateSalt(size: Int = SALT_SIZE): ByteArray {
         require(size >= SALT_SIZE) { "Salt must be at least $SALT_SIZE bytes" }
@@ -62,35 +107,45 @@ class CryptoManager(
     }
 
     /**
-     * Deriva una clave AES de 256 bits con PBKDF2-HMAC-SHA256.
+     * Deriva `authHash` y `vaultKey` de la contraseña maestra, con dos
+     * derivaciones PBKDF2 independientes (una por salt).
      *
-     * @param password contraseña en `CharArray` para que el llamador pueda
-     *   borrarla con `fill('\u0000')` cuando termine la sesión.
-     * @param salt salt del servidor o generado con [generateSalt].
+     * La contraseña se **normaliza a NFC antes de derivar**: "ñ" puede llegar
+     * como un solo carácter (U+00F1) o como "n" + tilde combinante (U+0303).
+     * Sin normalizar, la misma contraseña escrita en dos teclados distintos
+     * produciría claves distintas y el usuario perdería el acceso a su bóveda.
+     *
+     * @throws IllegalArgumentException si algún salt está vacío, si son iguales
+     *   o si `params.iterations` está por debajo de [minIterations].
      */
-    fun deriveKey(
-        password: CharArray,
-        salt: ByteArray,
-        iterations: Int = defaultIterations,
-    ): SecretKey {
-        require(salt.isNotEmpty()) { "Salt must not be empty" }
-        require(iterations >= 1) { "Iterations must be positive" }
+    fun deriveKeys(
+        masterPassword: CharArray,
+        saltAuth: ByteArray,
+        saltVault: ByteArray,
+        params: KdfParams = KdfParams(),
+    ): DerivedKeys {
+        require(saltAuth.isNotEmpty()) { "saltAuth must not be empty" }
+        require(saltVault.isNotEmpty()) { "saltVault must not be empty" }
+        require(!saltAuth.contentEquals(saltVault)) { "saltAuth and saltVault must be different" }
+        require(params.iterations >= minIterations) {
+            "Refusing KDF parameters below the minimum ($minIterations iterations)"
+        }
 
-        val spec = PBEKeySpec(password, salt, iterations, KEY_SIZE_BITS)
+        // Limitación conocida: `String` es inmutable, así que esta copia
+        // normalizada no se puede borrar. Es el precio de normalizar; el
+        // CharArray que sí controlamos se borra en el `finally`.
+        val password = Normalizer.normalize(String(masterPassword), Normalizer.Form.NFC).toCharArray()
         try {
-            val factory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM)
-            val keyBytes = factory.generateSecret(spec).encoded
+            val authHash = deriveKeyBytes(password, saltAuth, params.iterations)
+            val vaultKeyBytes = deriveKeyBytes(password, saltVault, params.iterations)
             try {
-                // SecretKeySpec copia el arreglo, así que podemos borrar el original.
-                return SecretKeySpec(keyBytes, KEY_ALGORITHM)
+                // SecretKeySpec copia los bytes: podemos borrar el original.
+                return DerivedKeys(authHash, SecretKeySpec(vaultKeyBytes, KEY_ALGORITHM))
             } finally {
-                keyBytes.fill(0)
+                vaultKeyBytes.fill(0)
             }
-        } catch (e: GeneralSecurityException) {
-            throw CryptoException("Key derivation failed", e)
         } finally {
-            // Borra la copia interna que PBEKeySpec guarda de la contraseña.
-            spec.clearPassword()
+            password.fill('\u0000')
         }
     }
 
@@ -119,7 +174,7 @@ class CryptoManager(
             blob[0] = BLOB_VERSION.toByte()
             nonce.copyInto(blob, destinationOffset = 1)
             sealed.copyInto(blob, destinationOffset = HEADER_SIZE)
-            // El arreglo `sealed` es copia nuestra: se borra para no dejarlo en el heap.
+            // `sealed` es copia nuestra: se borra para no dejarla en el heap.
             sealed.fill(0)
             blob
         } catch (e: GeneralSecurityException) {
@@ -181,11 +236,29 @@ class CryptoManager(
         aad: ByteArray = ByteArray(0),
     ): String = String(decrypt(blob, vaultKey, aad), Charsets.UTF_8)
 
+    /**
+     * Deriva [KEY_SIZE_BITS] bits con PBKDF2. La contraseña ya viene normalizada.
+     */
+    private fun deriveKeyBytes(password: CharArray, salt: ByteArray, iterations: Int): ByteArray {
+        val spec = PBEKeySpec(password, salt, iterations, KEY_SIZE_BITS)
+        try {
+            return SecretKeyFactory.getInstance(PBKDF2_ALGORITHM).generateSecret(spec).encoded
+        } catch (e: GeneralSecurityException) {
+            throw CryptoException("Key derivation failed", e)
+        } finally {
+            // Borra la copia interna que PBEKeySpec guarda de la contraseña.
+            spec.clearPassword()
+        }
+    }
+
     companion object {
         /** Iteraciones recomendadas por OWASP para PBKDF2-HMAC-SHA256. */
         const val DEFAULT_ITERATIONS = 600_000
 
-        /** Tamaño de clave AES-256. */
+        /** Mínimo que el cliente acepta del servidor. Igual al recomendado. */
+        const val MIN_ACCEPTED_ITERATIONS = 600_000
+
+        /** Tamaño de clave AES-256 (también de `authHash`). */
         const val KEY_SIZE_BITS = 256
 
         /** Tamaño del tag de autenticación de GCM. */

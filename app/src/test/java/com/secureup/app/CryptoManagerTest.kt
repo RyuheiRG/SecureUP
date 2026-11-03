@@ -2,6 +2,7 @@ package com.secureup.app
 
 import com.secureup.app.data.crypto.CryptoException
 import com.secureup.app.data.crypto.CryptoManager
+import com.secureup.app.data.crypto.KdfParams
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -12,59 +13,126 @@ import org.junit.Test
 /**
  * Pruebas del CryptoManager.
  *
- * Se usa una cuenta de iteraciones baja (1 000) para que las pruebas sean
- * rápidas; el valor de producción se verifica aparte en
- * [defaultIterations_matchOwaspRecommendation].
+ * Se construye con `minIterations = 1` y se derivan con pocas iteraciones para
+ * que las pruebas sean rápidas; los valores de producción se verifican aparte en
+ * [minAcceptedIterations_matchOwaspRecommendation].
  */
 class CryptoManagerTest {
 
-    private val crypto = CryptoManager(defaultIterations = TEST_ITERATIONS)
-    private val salt = ByteArray(CryptoManager.SALT_SIZE) { (it + 1).toByte() }
-    private val key = crypto.deriveKey(PASSWORD, salt)
+    private val crypto = CryptoManager(minIterations = 1)
+    private val saltAuth = "salt-auth".toByteArray()
+    private val saltVault = "salt-vault".toByteArray()
+    private val keys = crypto.deriveKeys(
+        masterPassword = PASSWORD,
+        saltAuth = saltAuth,
+        saltVault = saltVault,
+        params = KdfParams(iterations = TEST_ITERATIONS),
+    )
+    private val key = keys.vaultKey
 
     // --- Derivación de claves -------------------------------------------------
 
     @Test
-    fun deriveKey_isDeterministicForSamePasswordAndSalt() {
-        val first = crypto.deriveKey(PASSWORD, salt)
-        val second = crypto.deriveKey(PASSWORD, salt)
+    fun deriveKeys_isDeterministicForSamePasswordAndSalts() {
+        val first = deriveTestKeys()
+        val second = deriveTestKeys()
 
-        assertArrayEquals(first.encoded, second.encoded)
+        assertArrayEquals(first.authHash, second.authHash)
+        assertArrayEquals(first.vaultKey.encoded, second.vaultKey.encoded)
     }
 
     @Test
-    fun deriveKey_producesA256BitKey() {
-        assertEquals(CryptoManager.KEY_SIZE_BITS / 8, key.encoded.size)
+    fun deriveKeys_produces32ByteValues() {
+        assertEquals(CryptoManager.KEY_SIZE_BITS / 8, keys.authHash.size)
+        assertEquals(CryptoManager.KEY_SIZE_BITS / 8, keys.vaultKey.encoded.size)
     }
 
     @Test
-    fun deriveKey_withDifferentSalt_producesDifferentKey() {
-        val otherSalt = ByteArray(CryptoManager.SALT_SIZE) { (it + 99).toByte() }
-        val otherKey = crypto.deriveKey(PASSWORD, otherSalt)
-
-        assertFalse(key.encoded.contentEquals(otherKey.encoded))
+    fun deriveKeys_authHashDiffersFromVaultKey() {
+        // Si alguien cambia un salt por el otro, esto falla.
+        assertFalse(keys.authHash.contentEquals(keys.vaultKey.encoded))
     }
 
     @Test
-    fun deriveKey_withDifferentIterations_producesDifferentKey() {
-        val otherKey = crypto.deriveKey(PASSWORD, salt, iterations = TEST_ITERATIONS + 1)
+    fun deriveKeys_changingSaltVaultChangesOnlyTheVaultKey() {
+        val otherKeys = crypto.deriveKeys(
+            masterPassword = PASSWORD,
+            saltAuth = saltAuth,
+            saltVault = "otro-salt-vault".toByteArray(),
+            params = KdfParams(iterations = TEST_ITERATIONS),
+        )
 
-        assertFalse(key.encoded.contentEquals(otherKey.encoded))
+        assertArrayEquals("authHash depende solo de saltAuth", keys.authHash, otherKeys.authHash)
+        assertFalse(
+            "vaultKey debe cambiar al cambiar saltVault",
+            keys.vaultKey.encoded.contentEquals(otherKeys.vaultKey.encoded),
+        )
     }
 
     @Test
-    fun deriveKey_withEmptySalt_throws() {
+    fun deriveKeys_changingIterationsChangesBothKeys() {
+        val otherKeys = deriveTestKeys(iterations = TEST_ITERATIONS + 1)
+
+        assertFalse(keys.authHash.contentEquals(otherKeys.authHash))
+        assertFalse(keys.vaultKey.encoded.contentEquals(otherKeys.vaultKey.encoded))
+    }
+
+    @Test
+    fun deriveKeys_acceptsShortSalts() {
+        // Los vectores del RFC usan salts de 4 bytes; la longitud mínima de 16 se
+        // exige al generar el salt, no al derivar con uno que venga del servidor.
+        val result = crypto.deriveKeys(PASSWORD, "salt".toByteArray(), "nacl".toByteArray(), KdfParams(iterations = 1))
+
+        assertEquals(32, result.authHash.size)
+    }
+
+    @Test
+    fun deriveKeys_rejectsEqualSalts() {
         assertThrows(IllegalArgumentException::class.java) {
-            crypto.deriveKey(PASSWORD, ByteArray(0))
+            crypto.deriveKeys(PASSWORD, saltAuth, saltAuth.copyOf())
         }
     }
 
     @Test
-    fun defaultIterations_matchOwaspRecommendation() {
+    fun deriveKeys_rejectsEmptySalts() {
+        assertThrows(IllegalArgumentException::class.java) {
+            crypto.deriveKeys(PASSWORD, ByteArray(0), saltVault)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            crypto.deriveKeys(PASSWORD, saltAuth, ByteArray(0))
+        }
+    }
+
+    @Test
+    fun deriveKeys_rejectsIterationsBelowTheConfiguredMinimum() {
+        // El servidor manda los parámetros: no puede degradar el KDF.
+        val productionCrypto = CryptoManager()
+
+        assertThrows(IllegalArgumentException::class.java) {
+            productionCrypto.deriveKeys(
+                masterPassword = PASSWORD,
+                saltAuth = saltAuth,
+                saltVault = saltVault,
+                params = KdfParams(iterations = CryptoManager.MIN_ACCEPTED_ITERATIONS - 1),
+            )
+        }
+    }
+
+    @Test
+    fun minAcceptedIterations_matchOwaspRecommendation() {
         assertTrue(
             "OWASP exige al menos 600 000 iteraciones para PBKDF2-HMAC-SHA256",
-            CryptoManager.DEFAULT_ITERATIONS >= 600_000,
+            CryptoManager.MIN_ACCEPTED_ITERATIONS >= 600_000,
         )
+        assertEquals(CryptoManager.DEFAULT_ITERATIONS, CryptoManager.MIN_ACCEPTED_ITERATIONS)
+    }
+
+    @Test
+    fun derivedKeys_toStringDoesNotExposeKeyMaterial() {
+        val text = keys.toString()
+
+        assertFalse(text.contains(keys.authHash.toHex()))
+        assertFalse(text.contains(keys.vaultKey.encoded.toHex()))
     }
 
     // --- Cifrado / descifrado -------------------------------------------------
@@ -160,8 +228,12 @@ class CryptoManagerTest {
 
     @Test
     fun decrypt_withWrongKey_throws() {
-        val otherSalt = ByteArray(CryptoManager.SALT_SIZE) { (it + 99).toByte() }
-        val wrongKey = crypto.deriveKey(PASSWORD, otherSalt)
+        val wrongKey = crypto.deriveKeys(
+            masterPassword = PASSWORD,
+            saltAuth = saltAuth,
+            saltVault = "otro-salt-vault".toByteArray(),
+            params = KdfParams(iterations = TEST_ITERATIONS),
+        ).vaultKey
         val blob = crypto.encrypt("datos sensibles", key)
 
         assertThrows(CryptoException::class.java) { crypto.decrypt(blob, wrongKey) }
@@ -193,6 +265,13 @@ class CryptoManagerTest {
         assertEquals(CryptoManager.SALT_SIZE, first.size)
         assertFalse(first.contentEquals(second))
     }
+
+    private fun deriveTestKeys(iterations: Int = TEST_ITERATIONS) = crypto.deriveKeys(
+        masterPassword = PASSWORD,
+        saltAuth = saltAuth,
+        saltVault = saltVault,
+        params = KdfParams(iterations = iterations),
+    )
 
     private companion object {
         private const val TEST_ITERATIONS = 1_000
