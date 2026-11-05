@@ -140,6 +140,9 @@ class CryptoManager(
      * @throws IllegalArgumentException si el salt está vacío, si
      *   `params.version` no es [KdfParams.CURRENT_VERSION] o si
      *   `params.iterations` está fuera de `[minIterations, MAX_ACCEPTED_ITERATIONS]`.
+     *
+     * El llamador debe borrar `masterPassword` con `fill('\u0000')` en cuanto
+     * termine la sesión: esta función no lo hace porque el `CharArray` es suyo.
      */
     fun deriveKeys(
         masterPassword: CharArray,
