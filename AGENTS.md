@@ -112,7 +112,7 @@ Dentro del alcance: registro/login, CRUD de entradas del vault cifradas, verific
 3. **La clave de cifrado del vault nunca sale del dispositivo ni se persiste.** Se deriva de la contraseña maestra + `salt` y vive solo en RAM.
 4. **Una sola derivación costosa y dos etiquetas.** `masterKey = PBKDF2(contraseña_maestra, salt, iteraciones)`; de ella salen `auth_hash` y la clave del vault con `HMAC-SHA256(masterKey, etiqueta || 0x01)` (HKDF-Expand de un bloque). Con dos derivaciones PBKDF2 y salts que elige el servidor, un servidor malicioso puede devolver `salt_vault` como `salt_auth` y recibir la clave del vault disfrazada de `auth_hash`; con una sola derivación, `authHash` es una salida de HMAC con otra etiqueta y no se puede convertir en la clave del vault.
 5. **Nunca loggear** contraseñas, hashes, tokens, claves, ni el contenido de requests de auth/vault (`Log.d` incluido). Revisa que no queden logs sensibles.
-6. **Sin secretos en el código ni en el repo.** Ninguna API key en la app (las llamadas a HIBP/Safe Browsing las hace el backend como proxy). Si hace falta configuración local, va en `local.properties` (ya está en `.gitignore`).
+6. **Sin secretos en el código ni en el repo.** Ninguna API key en la app. Excepción aprobada (2026-11-09): HIBP Pwned Passwords se consulta **directo desde la app** porque no requiere clave y el k-anonimato ya limita la petición al prefijo de 5 caracteres del SHA-1; Safe Browsing sigue pendiente de un proxy en el backend. Si hace falta configuración local, va en `local.properties` (ya está en `.gitignore`).
 7. **Solo HTTPS.** Excepción permitida: tráfico en claro a `10.0.2.2` (emulador → backend local) únicamente en build `debug`, mediante `network_security_config`.
 8. Tokens de sesión: **no usar `EncryptedSharedPreferences` ni `androidx.security:security-crypto`** (deprecada). Usar Jetpack DataStore + cifrado AES-GCM con clave en Android Keystore (o Tink, si lo aprobamos).
 9. Desactivar capturas de pantalla (`FLAG_SECURE`) en pantallas que muestren contraseñas.
@@ -154,7 +154,7 @@ Autenticación con JWT de vida corta en header `Authorization: Bearer`.
 8. Escáner QR + resultado + historial. Aquí entran `<uses-permission android:name="android.permission.CAMERA" />` (en tiempo de ejecución) y `<uses-feature android:name="android.hardware.camera.any" android:required="false" />`.
 9. Perfil (logout, cambiar contraseña maestra, eliminar cuenta).
 
-Marca aquí el paso en el que vamos: **Paso actual: 5**
+Marca aquí el paso en el que vamos: **Paso actual: 8** (el paso 5, Bóveda, se pospuso a la entrega 26.3.1 por decisión de alcance; el historial de escaneos en Room cubre la persistencia de esta entrega)
 
 ## 9. Documentación oficial (consultar antes de usar una API)
 

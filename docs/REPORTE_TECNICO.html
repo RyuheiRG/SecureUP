@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>SecureUP — Reporte técnico 26.2.1</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #1a1d24;
+    margin: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  h1, h2, h3 { color: #0f1115; line-height: 1.2; }
+  h1 { font-size: 26pt; margin: 0 0 6pt; }
+  h2 {
+    font-size: 15pt;
+    margin: 22pt 0 8pt;
+    padding-bottom: 3pt;
+    border-bottom: 2px solid #3b82f6;
+  }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; }
+  p { margin: 0 0 7pt; text-align: justify; }
+  ul, ol { margin: 0 0 8pt 16pt; padding: 0; }
+  li { margin-bottom: 3pt; }
+  code {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 9pt;
+    background: #eef2f7;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+  pre {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 8.5pt;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 10pt 12pt;
+    border-radius: 6pt;
+    overflow: hidden;
+    white-space: pre-wrap;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6pt 0 10pt;
+    font-size: 9pt;
+  }
+  th {
+    background: #1e293b;
+    color: #fff;
+    text-align: left;
+    padding: 5pt 6pt;
+    font-weight: 600;
+  }
+  td { padding: 4pt 6pt; border-bottom: 1px solid #dbe1ea; vertical-align: top; }
+  tr:nth-child(even) td { background: #f6f8fb; }
+  .cover {
+    text-align: left;
+    padding-top: 40mm;
+    page-break-after: always;
+  }
+  .cover .tag {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-weight: 600;
+    font-size: 9pt;
+    padding: 4pt 10pt;
+    border-radius: 20pt;
+    margin-bottom: 14pt;
+  }
+  .cover .sub { font-size: 13pt; color: #475569; margin-bottom: 30pt; }
+  .cover .meta { font-size: 10pt; color: #334155; line-height: 1.9; border-left: 3px solid #3b82f6; padding-left: 10pt; }
+  .note {
+    background: #fff7ed;
+    border-left: 4px solid #f59e0b;
+    padding: 8pt 10pt;
+    margin: 8pt 0 10pt;
+    font-size: 9.5pt;
+  }
+  .ok {
+    background: #ecfdf5;
+    border-left: 4px solid #10b981;
+    padding: 8pt 10pt;
+    margin: 8pt 0 10pt;
+    font-size: 9.5pt;
+  }
+  .grid { display: flex; flex-wrap: wrap; gap: 8pt; margin: 8pt 0; }
+  .grid figure { width: 48%; margin: 0; page-break-inside: avoid; }
+  .grid img { width: 100%; border: 1px solid #cbd5e1; border-radius: 4pt; }
+  .grid figcaption { font-size: 8.5pt; color: #475569; margin-top: 3pt; text-align: center; }
+  .page-break { page-break-before: always; }
+  .small { font-size: 9pt; color: #475569; }
+  .kpi { display: flex; gap: 10pt; margin: 10pt 0 14pt; }
+  .kpi div {
+    flex: 1;
+    background: #f1f5f9;
+    border-radius: 6pt;
+    padding: 8pt;
+    text-align: center;
+  }
+  .kpi strong { display: block; font-size: 17pt; color: #1d4ed8; }
+  .kpi span { font-size: 8.5pt; color: #475569; }
+  .toc li { margin-bottom: 2pt; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <span class="tag">Entrega 26.2.1 · 9 de noviembre de 2026</span>
+  <h1>SecureUP</h1>
+  <p class="sub">Aplicación Android de seguridad digital personal.<br>
+  Verificación de contraseñas filtradas, escaneo de QR y análisis de URLs.</p>
+  <div class="meta">
+    <strong>Proyecto:</strong> Desarrollo de Aplicaciones Móviles (binas)<br>
+    <strong>Stack:</strong> Kotlin · Jetpack Compose · MVVM · Room · Retrofit · CameraX · ML Kit<br>
+    <strong>Repositorio:</strong> github.com/RyuheiRG/SecureUP (rama <code>develop</code>)<br>
+    <strong>Versión:</strong> 26.2.1 (versionCode 2) · <code>minSdk 26</code> · <code>targetSdk 35</code><br>
+    <strong>Fecha:</strong> 9 de noviembre de 2026
+  </div>
+</section>
+
+<h2>Contenido</h2>
+<ol class="toc">
+  <li>Resumen ejecutivo</li>
+  <li>Introducción: problema y objetivos</li>
+  <li>Alcance de la entrega y desviaciones</li>
+  <li>Arquitectura MVVM</li>
+  <li>Funcionalidades y flujos</li>
+  <li>Integración con la API de brechas (HIBP)</li>
+  <li>Persistencia con Room</li>
+  <li>Integraciones del dispositivo</li>
+  <li>Seguridad y privacidad</li>
+  <li>Pruebas y calidad</li>
+  <li>Evidencias de funcionamiento</li>
+  <li>Limitaciones y trabajo futuro</li>
+  <li>Conclusiones</li>
+  <li>Referencias</li>
+</ol>
+
+<h2>1. Resumen ejecutivo</h2>
+<p>SecureUP es una aplicación Android que reúne tres herramientas de seguridad personal en una sola cuenta: la verificación de contraseñas expuestas en brechas conocidas, el escaneo de códigos QR con análisis de la URL de destino y el historial local de los escaneos realizados.</p>
+<p>La entrega <strong>26.2.1</strong> implementa un corte vertical completo y verificable: autenticación simulada, verificador de brechas contra la API real de Have I Been Pwned, escáner QR con CameraX y ML Kit, análisis heurístico local, persistencia en Room, exportación del historial a PDF y perfil con cierre de sesión. La aplicación compila, pasa el análisis estático y las 67 pruebas unitarias, y fue probada en un dispositivo físico y en un emulador.</p>
+
+<div class="kpi">
+  <div><strong>67</strong><span>pruebas unitarias, 0 fallos</span></div>
+  <div><strong>0</strong><span>errores de lint</span></div>
+  <div><strong>3</strong><span>integraciones reales</span></div>
+  <div><strong>52,3 M</strong><span>apariciones de “password” en HIBP</span></div>
+</div>
+
+<h2>2. Introducción: problema y objetivos</h2>
+<h3>2.1 Problema</h3>
+<p>Una persona reutiliza contraseñas y abre enlaces sin comprobar su origen. Ambas conductas son frecuentes y difíciles de detectar a simple vista: una contraseña filtrada sigue funcionando hasta que alguien la usa, y un QR puede esconder una URL maliciosa detrás de una apariencia legítima.</p>
+<p>Las soluciones habituales exigen enviar la contraseña a un servidor o instalar varias aplicaciones. SecureUP propone lo contrario: verificar sin revelar y analizar antes de abrir, manteniendo los datos en el dispositivo.</p>
+
+<h3>2.2 Objetivos</h3>
+<ul>
+  <li><strong>General:</strong> construir una app Android con arquitectura MVVM que integre API real, persistencia local e integraciones del dispositivo en un flujo coherente.</li>
+  <li><strong>Específico 1:</strong> verificar contraseñas contra HIBP sin que la contraseña ni su hash completo salgan del teléfono.</li>
+  <li><strong>Específico 2:</strong> leer QR con la cámara o desde una imagen y clasificar la URL antes de permitir abrirla.</li>
+  <li><strong>Específico 3:</strong> persistir el historial en Room y exportarlo a PDF.</li>
+  <li><strong>Específico 4:</strong> demostrar la separación de capas con ViewModels, estados y repositorios, y respaldarla con pruebas.</li>
+</ul>
+
+<h2>3. Alcance de la entrega y desviaciones</h2>
+<table>
+  <tr><th>Requisito</th><th>Estado</th><th>Cómo se cumple</th></tr>
+  <tr><td>API real</td><td>✅</td><td>HIBP Pwned Passwords (consulta HTTPS con k-anonimato)</td></tr>
+  <tr><td>Persistencia</td><td>✅</td><td>Room 2.8.5, entidad, DAO y esquema exportado</td></tr>
+  <tr><td>Integración 1</td><td>✅</td><td>CameraX para la vista de cámara</td></tr>
+  <tr><td>Integración 2</td><td>✅</td><td>ML Kit Barcode Scanning (cámara y galería)</td></tr>
+  <tr><td>Integración 3</td><td>✅</td><td>SAF + <code>PdfDocument</code> y Photo Picker del sistema</td></tr>
+  <tr><td>Arquitectura MVVM</td><td>✅</td><td>Pantalla → ViewModel → Repository → Room/Retrofit</td></tr>
+  <tr><td>Bóveda de contraseñas</td><td>⏳</td><td>Pospuesta a 26.3.1 por decisión de alcance</td></tr>
+  <tr><td>Backend propio</td><td>⏳</td><td>Proyecto separado, aún no disponible</td></tr>
+</table>
+
+<div class="note">
+  <strong>Desviaciones declaradas.</strong> (1) La pestaña inferior «Bóveda» se sustituyó temporalmente por «Brechas», porque la bóveda no forma parte de esta entrega. (2) El Security Score se calcula solo con el historial de escaneos: cada URL peligrosa resta 30 puntos y cada sospechosa 10. (3) La verificación de URLs es heurística local; Safe Browsing necesita un proxy en el backend y queda pendiente. (4) El login usa un repositorio simulado en memoria hasta que exista la API propia.
+</div>
+
+<h2>4. Arquitectura MVVM</h2>
+<p>La aplicación sigue el patrón <strong>Model-View-ViewModel</strong> con una separación estricta de responsabilidades. Las pantallas Compose no contienen lógica de negocio, red, criptografía ni acceso a datos: solo pintan un estado inmutable y emiten eventos.</p>
+
+<pre>Compose (ui/screens)  ──eventos──▶  ViewModel (StateFlow)  ──▶  Repository
+        ▲                                                        │
+        └────────────── UiState ◀───────────────────────────────┘
+                                                     │
+                                    ┌────────────────┴────────────────┐
+                                    ▼                                 ▼
+                          Room (historial QR)              Retrofit (HIBP)</pre>
+
+<h3>4.1 Capas y paquetes</h3>
+<table>
+  <tr><th>Capa</th><th>Paquete</th><th>Responsabilidad</th></tr>
+  <tr><td>UI</td><td><code>ui/screens</code>, <code>ui/components</code>, <code>ui/navigation</code>, <code>ui/theme</code></td><td>Pintar estado, emitir eventos y navegar. Sin lógica de negocio.</td></tr>
+  <tr><td>Presentación</td><td><code>viewmodel</code></td><td>Exponer un <code>UiState</code> por pantalla como <code>StateFlow</code> y lanzar operaciones en <code>viewModelScope</code>.</td></tr>
+  <tr><td>Dominio</td><td><code>domain/model</code>, <code>domain/repository</code>, <code>domain/security</code></td><td>Modelos, contratos de repositorio y reglas puras como <code>UrlAnalyzer</code>.</td></tr>
+  <tr><td>Datos</td><td><code>data/local</code>, <code>data/remote</code>, <code>data/repository</code>, <code>data/scanner</code>, <code>data/export</code></td><td>Implementaciones concretas: Room, Retrofit, ML Kit, PDF.</td></tr>
+  <tr><td>Composición</td><td><code>di</code></td><td><code>AppGraph</code> y <code>AppContainer</code>: un service locator simple inicializado en <code>SecureUpApplication</code>.</td></tr>
+</table>
+
+<h3>4.2 Decisiones de diseño</h3>
+<ul>
+  <li><strong>Un ViewModel por pantalla</strong> con su propio <code>data class</code> de estado. La UI nunca muta el estado directamente.</li>
+  <li><strong>Repositorios como contratos</strong> en <code>domain/repository</code>. Las pruebas sustituyen HIBP por un doble sin necesidad de red.</li>
+  <li><strong>Operaciones de E/S en <code>Dispatchers.IO</code></strong> y análisis de URL en <code>Dispatchers.Default</code>; nunca en el hilo principal.</li>
+  <li><strong>Estado que sobrevive a la navegación</strong> con <code>collectAsState()</code> y <code>StateFlow</code>; el escáner limpia la URL detectada después de navegar para no repetir la acción al recomponer.</li>
+  <li><strong>Sin dependencias nuevas</strong> fuera de las aprobadas: Room, KSP, Retrofit, CameraX y ML Kit.</li>
+</ul>
+
+<h2>5. Funcionalidades y flujos</h2>
+
+<h3>5.1 Autenticación</h3>
+<p>Registro y login validan correo y contraseña maestra (mínimo 12 caracteres, confirmación en el registro). Al autenticarse, <code>AuthViewModel</code> guarda el <code>User</code> en <code>SessionManager</code> y la navegación limpia la pila para que «atrás» salga de la app. El cierre de sesión borra la sesión en memoria y vuelve al login.</p>
+<p class="small">Limitación: <code>FakeAuthRepository</code> acepta cualquier correo válido con contraseña de 12+ caracteres. No hay backend todavía.</p>
+
+<h3>5.2 Verificador de brechas</h3>
+<ol>
+  <li>El usuario escribe la contraseña. El ViewModel la mantiene solo en memoria.</li>
+  <li><code>HibpBreachRepository</code> normaliza a NFC, calcula SHA-1 y separa prefijo (5 hex) y sufijo (35 hex).</li>
+  <li>Solo el prefijo viaja a <code>api.pwnedpasswords.com/range/{prefijo}</code> con la cabecera <code>Add-Padding: true</code>.</li>
+  <li>La respuesta se compara localmente; las filas de relleno con contador 0 se ignoran.</li>
+  <li>El ViewModel borra la contraseña del estado al terminar, haya resultado o error.</li>
+</ol>
+<p>Resultado real durante la prueba: la contraseña <code>password</code> apareció <strong>52 372 427 veces</strong>. La app mostró el badge «Expuesta» y el número formateado.</p>
+
+<h3>5.3 Escáner QR y análisis</h3>
+<ul>
+  <li><strong>Cámara:</strong> CameraX con <code>Preview</code> e <code>ImageAnalysis</code> en modo <code>KEEP_ONLY_LATEST</code>. Un <code>AtomicBoolean</code> evita analizar dos fotogramas a la vez y cada <code>ImageProxy</code> se cierra en <code>addOnCompleteListener</code>, incluso si ML Kit falla.</li>
+  <li><strong>Galería:</strong> Photo Picker (<code>PickVisualMedia</code>), sin permiso de almacenamiento. <code>QrCodeReader</code> reduce la imagen antes de decodificarla y recicla el bitmap.</li>
+  <li><strong>Permiso:</strong> <code>CAMERA</code> se pide en tiempo de ejecución con explicación; si se deniega, queda la galería.</li>
+  <li><strong>Linterna:</strong> botón superpuesto que alterna <code>enableTorch</code>.</li>
+</ul>
+
+<h3>5.4 Reglas de <code>UrlAnalyzer</code></h3>
+<table>
+  <tr><th>Señal</th><th>Veredicto</th></tr>
+  <tr><td>Esquema distinto de <code>http</code>/<code>https</code>, URL inválida o host vacío</td><td>Peligroso</td></tr>
+  <tr><td>Usuario/contraseña embebidos (<code>https://banco.com@malicioso.example</code>)</td><td>Peligroso</td></tr>
+  <tr><td>Sin TLS (<code>http</code>), IP literal, punycode (<code>xn--</code>), acortador conocido o URL de más de 150 caracteres</td><td>Sospechoso</td></tr>
+  <tr><td>Sin señales</td><td>Seguro (sin amenazas conocidas)</td></tr>
+</table>
+<p>Solo las URLs seguras muestran «Abrir en el navegador». Las demás muestran las señales detectadas y un aviso; la URL completa siempre es visible y seleccionable. Nunca se abre automáticamente.</p>
+
+<h3>5.5 Historial y PDF</h3>
+<p>El escaneo se guarda en Room con URL, veredicto y marca de tiempo. La pantalla de historial observa la base de datos y permite:</p>
+<ul>
+  <li><strong>Exportar PDF:</strong> <code>PdfDocument</code> genera una tabla con fecha, veredicto y URL (15 filas por página) y la escribe en el <code>Uri</code> que devuelve el selector de documentos (SAF). No requiere permisos de almacenamiento.</li>
+  <li><strong>Borrar todo:</strong> diálogo de confirmación y <code>DELETE</code> sobre la tabla.</li>
+  <li><strong>Abrir un registro:</strong> vuelve a la pantalla de resultado con el análisis de esa URL.</li>
+</ul>
+
+<h3>5.6 Inicio y perfil</h3>
+<p><code>HomeViewModel</code> observa el historial y calcula el score con datos reales: <code>100 − 30 × peligrosas − 10 × sospechosas</code>, acotado entre 0 y 100. También muestra el total de escaneos, las alertas y el último escaneo. El perfil muestra el correo de la sesión, la versión y el cierre de sesión.</p>
+
+<h2>6. Integración con la API de brechas (HIBP)</h2>
+<p>Se usa la API v3 de Pwned Passwords, que no requiere clave. El contrato se declara con Retrofit:</p>
+<pre>@GET("range/{prefix}")
+@Headers("Add-Padding: true", "User-Agent: SecureUP-Android")
+suspend fun getRange(@Path("prefix") prefix: String): Response&lt;String&gt;</pre>
+<table>
+  <tr><th>Aspecto</th><th>Implementación</th></tr>
+  <tr><td>Privacidad</td><td>Solo viaja el prefijo SHA-1 de 5 caracteres; el resto se compara en el dispositivo.</td></tr>
+  <tr><td>Normalización</td><td><code>java.text.Normalizer</code> NFC antes de calcular el hash.</td></tr>
+  <tr><td>Relleno</td><td><code>Add-Padding</code> evita que el tamaño de la respuesta delate el prefijo.</td></tr>
+  <tr><td>Errores</td><td>5xx → servidor; 4xx y <code>IOException</code> → red; cuerpo vacío o línea mal formada → respuesta inválida.</td></tr>
+  <tr><td>Pruebas</td><td>7 pruebas con una implementación falsa de <code>HibpApi</code>: prefijo enviado, sufijo encontrado, relleno, error de red y NFC.</td></tr>
+</table>
+<p>La API propia (registro, login y vault) sigue pendiente. Cuando exista, el cliente enviará <code>auth_hash</code> derivado con PBKDF2 + HKDF y el blob cifrado con AES-256-GCM; la contraseña maestra nunca se enviará.</p>
+
+<h2>7. Persistencia con Room</h2>
+<table>
+  <tr><th>Elemento</th><th>Detalle</th></tr>
+  <tr><td>Entidad</td><td><code>ScanHistoryEntity</code> → tabla <code>scan_history</code>: <code>id</code> autogenerado, <code>url</code>, <code>verdict</code> (texto), <code>scannedAt</code>.</td></tr>
+  <tr><td>DAO</td><td><code>observeAll(): Flow&lt;List&lt;ScanRecord&gt;&gt;</code>, <code>insert</code>, <code>clear</code>.</td></tr>
+  <tr><td>Base</td><td><code>SecureUpDatabase</code>, versión 1, instancia única con doble comprobación.</td></tr>
+  <tr><td>Esquema</td><td>Exportado en <code>app/schemas/</code> y versionado en el repositorio para futuras migraciones.</td></tr>
+  <tr><td>Repositorio</td><td><code>RoomScanHistoryRepository</code> mapea entidad ↔ modelo de dominio.</td></tr>
+</table>
+<p>El veredicto se guarda como texto (<code>SAFE</code>, <code>SUSPICIOUS</code>, <code>DANGEROUS</code>) para que la base siga siendo legible si cambia el orden del enum. El historial no se cifra porque solo contiene URLs y veredictos, no credenciales; la bóveda, que sí contiene secretos, tendrá cifrado AES-GCM en la siguiente entrega.</p>
+
+<h2>8. Integraciones del dispositivo</h2>
+<table>
+  <tr><th>Integración</th><th>Uso</th><th>Cuidado aplicado</th></tr>
+  <tr><td>CameraX 1.6.2</td><td>Vista previa y análisis de fotogramas</td><td>Un análisis a la vez; <code>unbindAll()</code> antes de enlazar; fotogramas siempre cerrados.</td></tr>
+  <tr><td>ML Kit Barcode 17.3.0</td><td>Detección de QR en cámara y galería</td><td>Procesamiento local; bitmap reducido y reciclado; cliente cerrado al salir.</td></tr>
+  <tr><td>Photo Picker</td><td>Elegir una imagen sin permisos de almacenamiento</td><td>Solo se accede al <code>Uri</code> elegido por el usuario.</td></tr>
+  <tr><td>SAF + PdfDocument</td><td>Exportar el historial</td><td>El destino lo elige el usuario; sin <code>WRITE_EXTERNAL_STORAGE</code>.</td></tr>
+</table>
+
+<h2>9. Seguridad y privacidad</h2>
+<table>
+  <tr><th>Control</th><th>Implementación verificada</th></tr>
+  <tr><td>Contraseña maestra</td><td>Nunca se persiste ni se envía; solo vive en memoria durante la sesión.</td></tr>
+  <tr><td>KDF y cifrado (entrega previa)</td><td>PBKDF2-HMAC-SHA256 con mínimo 600 000 iteraciones y HKDF-Expand de un bloque para <code>auth_hash</code> y clave del vault; AES-256-GCM con nonce de 12 bytes y AAD = UUID.</td></tr>
+  <tr><td>Brechas</td><td>k-anonimato: solo el prefijo SHA-1 de 5 caracteres; respuesta con relleno.</td></tr>
+  <tr><td>Red</td><td>Solo HTTPS; <code>usesCleartextTraffic="false"</code>.</td></tr>
+  <tr><td>Manifest</td><td><code>allowBackup="false"</code>, un solo componente exportado (launcher), permisos <code>INTERNET</code> y <code>CAMERA</code> en tiempo de ejecución.</td></tr>
+  <tr><td>Registros</td><td>Sin <code>Log.*</code> en <code>app/src/main</code>; no se registran contraseñas, hashes ni tokens.</td></tr>
+  <tr><td>QR</td><td>URL no confiable: se muestra completa, se analiza antes de abrir y nunca se abre sola; solo <code>http</code>/<code>https</code>.</td></tr>
+  <tr><td>Secretos</td><td>Ninguna API key en la app ni en el repositorio.</td></tr>
+</table>
+<div class="ok">
+  <strong>Verificación automática:</strong> <code>lintDebug</code> terminó con <strong>0 errores</strong> y 25 advertencias (targetSdk no reciente, tamaños de vectores heredados y avisos de versiones). No se encontraron llamadas a <code>Log</code> en el código de producción.
+</div>
+
+<h2>10. Pruebas y calidad</h2>
+<h3>10.1 Pruebas unitarias</h3>
+<table>
+  <tr><th>Clase</th><th>Pruebas</th><th>Qué cubre</th></tr>
+  <tr><td><code>CryptoManagerTest</code></td><td>28</td><td>Vectores de PBKDF2/HKDF, nonce distinto por operación, manipulación de ciphertext y AAD.</td></tr>
+  <tr><td><code>UrlAnalyzerTest</code></td><td>11</td><td>HTTPS seguro, HTTP, IP, punycode, acortador, user-info, esquemas peligrosos y URL larga.</td></tr>
+  <tr><td><code>HibpBreachRepositoryTest</code></td><td>7</td><td>Prefijo de 5, sufijo encontrado, relleno, error de red, respuesta vacía y NFC.</td></tr>
+  <tr><td><code>AuthValidatorTest</code></td><td>6</td><td>Reglas de correo y contraseña maestra.</td></tr>
+  <tr><td><code>AuthViewModelTest</code></td><td>5</td><td>Estados de carga, error y éxito.</td></tr>
+  <tr><td><code>BreachViewModelTest</code></td><td>5</td><td>Resultado, error, carga y borrado de la contraseña.</td></tr>
+  <tr><td><code>FakeAuthRepositoryTest</code></td><td>4</td><td>Login y registro simulados, incluido el correo de error.</td></tr>
+  <tr><td><code>ExampleUnitTest</code></td><td>1</td><td>Prueba base del proyecto.</td></tr>
+  <tr><td><strong>Total</strong></td><td><strong>67</strong></td><td><strong>0 fallos</strong> · <code>testDebugUnitTest</code></td></tr>
+</table>
+<p>Además hay 6 pruebas instrumentadas de <code>CryptoManager</code> que repiten los vectores en el proveedor criptográfico de Android (Conscrypt) y una prueba base de instrumentación.</p>
+
+<h3>10.2 Pruebas manuales en dispositivo</h3>
+<table>
+  <tr><th>Prueba</th><th>Resultado</th></tr>
+  <tr><td>Instalación del APK debug en teléfono físico (Android 16 / API 36) y emulador (API 35)</td><td>Correcta</td></tr>
+  <tr><td>Onboarding → login con credenciales válidas</td><td>Navega al Inicio con sesión</td></tr>
+  <tr><td>Verificación real de <code>password</code> en HIBP</td><td>«Expuesta» · 52 372 427 apariciones</td></tr>
+  <tr><td>QR seguro desde galería (<code>https://example.com</code>)</td><td>«Seguro» y botón para abrir</td></tr>
+  <tr><td>QR peligroso (<code>https://banco.com@malicioso.example/login</code>)</td><td>«Peligroso», señal de user-info y sin botón de abrir</td></tr>
+  <tr><td>Cerrar el proceso y volver a entrar</td><td>El historial, las alertas y el score se conservan (Room)</td></tr>
+  <tr><td>Exportar historial a PDF</td><td>Archivo de 40 160 bytes generado en Descargas</td></tr>
+  <tr><td>Cerrar sesión</td><td>Vuelve al login y limpia la sesión</td></tr>
+</table>
+
+<h2>11. Evidencias de funcionamiento</h2>
+<div class="grid">
+  <figure><img src="evidencias/01-login.png" alt="Login"><figcaption>Login con validación</figcaption></figure>
+  <figure><img src="evidencias/02-brecha-expuesta.png" alt="Brecha"><figcaption>HIBP: «password» expuesta 52 372 427 veces</figcaption></figure>
+  <figure><img src="evidencias/03-qr-seguro.png" alt="QR seguro"><figcaption>QR seguro desde galería</figcaption></figure>
+  <figure><img src="evidencias/04-qr-peligroso.png" alt="QR peligroso"><figcaption>QR peligroso: no se ofrece abrir</figcaption></figure>
+  <figure><img src="evidencias/05-inicio-score.png" alt="Inicio"><figcaption>Inicio con score real (70) y última alerta</figcaption></figure>
+  <figure><img src="evidencias/06-historial.png" alt="Historial"><figcaption>Historial persistido en Room</figcaption></figure>
+</div>
+<p class="small">Las capturas se tomaron en el emulador API 35 durante la verificación de esta entrega. El PDF de ejemplo está en <code>docs/evidencias/ejemplo-historial.pdf</code>.</p>
+
+<h2>12. Limitaciones y trabajo futuro</h2>
+<table>
+  <tr><th>Limitación</th><th>Impacto</th><th>Trabajo futuro</th></tr>
+  <tr><td>Sin backend propio</td><td>Login y registro son simulados; no hay cuentas reales ni sincronización.</td><td>Implementar la API REST (registro, login, vault) y sustituir <code>FakeAuthRepository</code>.</td></tr>
+  <tr><td>Sin bóveda</td><td>No se guardan credenciales todavía.</td><td>Room cifrado + AES-256-GCM, pantallas de lista, detalle y alta.</td></tr>
+  <tr><td>Análisis de URL heurístico</td><td>No detecta campañas nuevas ni dominios recién registrados.</td><td>Proxy de Google Safe Browsing en el backend.</td></tr>
+  <tr><td>Score parcial</td><td>Solo considera escaneos, no la fortaleza de contraseñas.</td><td>Incorporar las métricas de la bóveda.</td></tr>
+  <tr><td>Historial sin cifrar</td><td>Contiene URLs visitadas, no secretos.</td><td>Valorar cifrado si se añaden datos sensibles.</td></tr>
+  <tr><td>Cambio de contraseña maestra y eliminación de cuenta</td><td>Pendientes de diseño y backend.</td><td>Implementarlos junto con la bóveda.</td></tr>
+</table>
+
+<h2>13. Conclusiones</h2>
+<p>La entrega demuestra un corte vertical funcional: una pantalla Compose que no sabe de red, un ViewModel que orquesta, un repositorio que decide el origen del dato y una fuente real (HIBP o Room). Las tres integraciones —API, cámara/ML y PDF/SAF— funcionan en un dispositivo y están cubiertas por pruebas o por verificación manual documentada.</p>
+<p>El resultado más importante es de privacidad: la verificación de brechas se hizo contra el servicio real sin enviar la contraseña ni su hash completo. Ese mismo principio guiará la bóveda de la siguiente entrega: una sola derivación costosa, claves que nunca salen del dispositivo y cifrado autenticado por entrada.</p>
+
+<h2>14. Referencias</h2>
+<ul class="small">
+  <li>Android Developers. <em>Guide to app architecture</em>. developer.android.com/topic/architecture</li>
+  <li>Android Developers. <em>Save data in a local database using Room</em>. developer.android.com/training/data-storage/room</li>
+  <li>Android Developers. <em>CameraX overview</em>. developer.android.com/media/camera/camerax</li>
+  <li>Google ML Kit. <em>Barcode Scanning</em>. developers.google.com/ml-kit/vision/barcode-scanning/android</li>
+  <li>Have I Been Pwned. <em>Pwned Passwords API v3</em>. haveibeenpwned.com/API/v3#PwnedPasswords</li>
+  <li>OWASP. <em>Password Storage Cheat Sheet</em>. cheatsheetseries.owasp.org</li>
+  <li>OWASP. <em>Mobile Application Security Verification Standard (MASVS)</em>.</li>
+  <li>Square. <em>Retrofit</em>. square.github.io/retrofit/</li>
+</ul>
+
+</body>
+</html>

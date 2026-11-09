@@ -29,7 +29,7 @@ import com.secureup.app.ui.theme.SecureUPTheme
 import com.secureup.app.ui.theme.SecureUpColors
 import com.secureup.app.ui.theme.Spacing
 
-enum class BottomBarDestination { Home, Vault, Scanner, Profile }
+enum class BottomBarDestination { Home, Breach, Scanner, Profile }
 
 /**
  * Barra inferior de navegación de SecureUP.
@@ -58,10 +58,10 @@ fun SecureUpBottomBar(
             onClick = { onDestinationSelected(BottomBarDestination.Home) },
         )
         BottomBarItem(
-            label = stringResource(id = R.string.nav_vault),
-            iconRes = R.drawable.ic_shield,
-            isSelected = currentDestination == BottomBarDestination.Vault,
-            onClick = { onDestinationSelected(BottomBarDestination.Vault) },
+            label = stringResource(id = R.string.nav_breach),
+            iconRes = R.drawable.ic_shield_check_blue,
+            isSelected = currentDestination == BottomBarDestination.Breach,
+            onClick = { onDestinationSelected(BottomBarDestination.Breach) },
         )
         BottomBarItem(
             label = stringResource(id = R.string.nav_scanner),

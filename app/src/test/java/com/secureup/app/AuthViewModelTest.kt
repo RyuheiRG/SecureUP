@@ -1,8 +1,9 @@
 package com.secureup.app
 
-import com.secureup.app.data.repository.AuthRepository
-import com.secureup.app.data.repository.AuthResult
-import com.secureup.app.model.User
+import com.secureup.app.data.repository.SessionManager
+import com.secureup.app.domain.model.User
+import com.secureup.app.domain.repository.AuthRepository
+import com.secureup.app.domain.repository.AuthResult
 import com.secureup.app.viewmodel.AuthViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -28,7 +29,8 @@ class AuthViewModelTest {
     val mainDispatcherRule = MainDispatcherRule(dispatcher)
 
     private val repository = RecordingAuthRepository()
-    private val viewModel = AuthViewModel(repository, dispatcher)
+    private val sessionManager = SessionManager()
+    private val viewModel = AuthViewModel(repository, sessionManager, dispatcher)
 
     @Test
     fun login_withInvalidEmail_doesNotCallRepository_andClearsPassword() = runTest(dispatcher) {
@@ -64,6 +66,7 @@ class AuthViewModelTest {
         assertEquals("", state.password)
         assertEquals(1, repository.loginCalls)
         assertEquals("usuario@correo.com", repository.lastLoginEmail)
+        assertEquals("usuario@correo.com", sessionManager.currentUser.value?.email)
     }
 
     @Test

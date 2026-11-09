@@ -1,6 +1,6 @@
-package com.secureup.app.data.repository
+package com.secureup.app.domain.repository
 
-import com.secureup.app.model.User
+import com.secureup.app.domain.model.User
 
 /**
  * Resultado de las operaciones de autenticación.
