@@ -5,9 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.secureup.app.R
-import com.secureup.app.data.repository.AuthRepository
-import com.secureup.app.data.repository.AuthResult
-import com.secureup.app.data.repository.FakeAuthRepository
+import com.secureup.app.data.repository.SessionManager
+import com.secureup.app.di.AppGraph
+import com.secureup.app.domain.repository.AuthRepository
+import com.secureup.app.domain.repository.AuthResult
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -64,6 +65,7 @@ data class RegisterUiState(
  */
 class AuthViewModel(
     private val authRepository: AuthRepository,
+    private val sessionManager: SessionManager,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
 
@@ -121,6 +123,7 @@ class AuthViewModel(
             val result = authRepository.login(validation.sanitizedEmail, currentState.password)
             when (result) {
                 is AuthResult.Success -> {
+                    sessionManager.signIn(result.user)
                     _loginUiState.update {
                         it.copy(
                             password = "", // Limpieza de contraseña
@@ -207,6 +210,7 @@ class AuthViewModel(
             val result = authRepository.register(validation.sanitizedEmail, currentState.masterPassword)
             when (result) {
                 is AuthResult.Success -> {
+                    sessionManager.signIn(result.user)
                     _registerUiState.update {
                         it.copy(
                             masterPassword = "", // Limpieza de contraseña
@@ -234,11 +238,12 @@ class AuthViewModel(
      * Factory manual para instanciar AuthViewModel inyectando el repositorio por constructor.
      */
     class Factory(
-        private val repository: AuthRepository = FakeAuthRepository(),
+        private val repository: AuthRepository = AppGraph.container.authRepository,
+        private val sessionManager: SessionManager = AppGraph.container.sessionManager,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return AuthViewModel(repository) as T
+            return AuthViewModel(repository, sessionManager) as T
         }
     }
 }

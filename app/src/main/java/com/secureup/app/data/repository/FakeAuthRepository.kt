@@ -1,6 +1,8 @@
 package com.secureup.app.data.repository
 
-import com.secureup.app.model.User
+import com.secureup.app.domain.model.User
+import com.secureup.app.domain.repository.AuthRepository
+import com.secureup.app.domain.repository.AuthResult
 import kotlinx.coroutines.delay
 
 /**

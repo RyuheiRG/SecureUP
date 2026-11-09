@@ -5,6 +5,7 @@ pluginManagement {
                 includeGroupByRegex("com\\.android.*")
                 includeGroupByRegex("com\\.google.*")
                 includeGroupByRegex("androidx.*")
+                excludeGroup("com.google.devtools.ksp")
             }
         }
         mavenCentral()
@@ -17,7 +18,17 @@ plugins {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        google()
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+                // KSP se publica también en Maven Central. Evitar que Gradle lo
+                // pida a dl.google.com: si ese host no resuelve, la descarga falla
+                // en vez de continuar con el siguiente repositorio.
+                excludeGroup("com.google.devtools.ksp")
+            }
+        }
         mavenCentral()
     }
 }

@@ -16,12 +16,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.secureup.app.R
+import com.secureup.app.domain.model.ScanRecord
+import com.secureup.app.domain.model.ScanVerdict
+import com.secureup.app.domain.repository.ScanHistoryRepository
 import com.secureup.app.ui.components.BottomBarDestination
 import com.secureup.app.ui.components.QuickActionButton
 import com.secureup.app.ui.components.ScoreRing
@@ -29,22 +36,30 @@ import com.secureup.app.ui.components.SecureUpBottomBar
 import com.secureup.app.ui.components.SecureUpTopBar
 import com.secureup.app.ui.components.StatCard
 import com.secureup.app.ui.components.StatCardVariant
+import com.secureup.app.ui.components.StatusBadge
+import com.secureup.app.ui.components.StatusBadgeVariant
 import com.secureup.app.ui.theme.Radius
 import com.secureup.app.ui.theme.SecureUPTheme
 import com.secureup.app.ui.theme.SecureUpColors
 import com.secureup.app.ui.theme.Spacing
+import com.secureup.app.viewmodel.HomeViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * Pantalla de Inicio / Dashboard (Frame A09a - Mi Seguridad).
- * Muestra el Security Score, contadores de contraseñas y brechas,
+ * Muestra el Security Score, contadores reales del historial de escaneos,
  * accesos rápidos y navegación inferior.
  */
 @Composable
 fun HomeScreen(
-    onNewEntryClick: () -> Unit = {},
-    onScanQrClick: () -> Unit = {},
+    onBreachClick: () -> Unit,
+    onScanQrClick: () -> Unit,
     onDestinationSelected: (BottomBarDestination) -> Unit = {},
+    viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory()),
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     Scaffold(
         topBar = {
             SecureUpTopBar(title = stringResource(id = R.string.home_title))
@@ -84,7 +99,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(Spacing.Xl))
 
                 ScoreRing(
-                    score = 78,
+                    score = uiState.securityScore,
                     maxScore = 100,
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                 )
@@ -92,17 +107,21 @@ fun HomeScreen(
 
             // Tarjetas de estadísticas: en Figma (`62:229`) van juntas con 12 dp entre ellas
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                // Contraseñas guardadas
+                // Escaneos realizados (historial real en Room)
                 StatCard(
-                    label = stringResource(id = R.string.home_passwords_label),
-                    value = stringResource(id = R.string.home_passwords_value),
+                    label = stringResource(id = R.string.home_scans_label),
+                    value = stringResource(id = R.string.home_scans_value, uiState.scanCount),
                 )
 
-                // Brechas detectadas
+                // Alertas detectadas (sospechosas + peligrosas)
                 StatCard(
-                    label = stringResource(id = R.string.home_breaches_label),
-                    value = stringResource(id = R.string.home_breaches_value),
-                    variant = StatCardVariant.Danger,
+                    label = stringResource(id = R.string.home_alerts_label),
+                    value = stringResource(id = R.string.home_alerts_value, uiState.alerts),
+                    variant = if (uiState.alerts > 0) {
+                        StatCardVariant.Danger
+                    } else {
+                        StatCardVariant.Neutral
+                    },
                 )
             }
 
@@ -121,8 +140,8 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.M),
                 ) {
                     QuickActionButton(
-                        text = stringResource(id = R.string.home_new_entry_button),
-                        onClick = onNewEntryClick,
+                        text = stringResource(id = R.string.home_breach_button),
+                        onClick = onBreachClick,
                         modifier = Modifier.weight(1f),
                     )
 
@@ -134,6 +153,52 @@ fun HomeScreen(
                     )
                 }
             }
+
+            uiState.lastScanUrl?.let { lastUrl ->
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                    Text(
+                        text = stringResource(id = R.string.home_last_scan_label),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = SecureUpColors.TextSecondary,
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(Radius.Card))
+                            .background(SecureUpColors.SurfaceVariant)
+                            .padding(Spacing.L),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        Text(
+                            text = lastUrl,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = SecureUpColors.TextPrimary,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                        val verdict = uiState.lastScanVerdict
+                        val badgeVariant = when (verdict) {
+                            ScanVerdict.SAFE -> StatusBadgeVariant.Safe
+                            ScanVerdict.SUSPICIOUS -> StatusBadgeVariant.Suspicious
+                            ScanVerdict.DANGEROUS -> StatusBadgeVariant.Dangerous
+                            null -> StatusBadgeVariant.Suspicious
+                        }
+                        StatusBadge(
+                            text = stringResource(
+                                id = when (verdict) {
+                                    ScanVerdict.SAFE -> R.string.result_badge_safe
+                                    ScanVerdict.SUSPICIOUS -> R.string.result_badge_suspicious
+                                    ScanVerdict.DANGEROUS -> R.string.result_badge_dangerous
+                                    null -> R.string.result_badge_suspicious
+                                }
+                            ),
+                            variant = badgeVariant,
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -142,6 +207,26 @@ fun HomeScreen(
 @Composable
 private fun HomeScreenPreview() {
     SecureUPTheme {
-        HomeScreen()
+        HomeScreen(
+            onBreachClick = {},
+            onScanQrClick = {},
+            viewModel = HomeViewModel(
+                repository = object : ScanHistoryRepository {
+                    override fun observeAll(): Flow<List<ScanRecord>> = flowOf(
+                        listOf(
+                            ScanRecord(
+                                id = 1,
+                                url = "https://example.com",
+                                verdict = ScanVerdict.SUSPICIOUS,
+                                scannedAt = 0L,
+                            )
+                        )
+                    )
+
+                    override suspend fun add(record: ScanRecord): Long = 0L
+                    override suspend fun clear() = Unit
+                }
+            ),
+        )
     }
 }

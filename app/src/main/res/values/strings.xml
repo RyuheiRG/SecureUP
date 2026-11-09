@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">Secure UP</string>
 
+    <!-- Común -->
+    <string name="back">Volver</string>
+    <string name="dialog_cancel">Cancelar</string>
+
     <!-- Splash (A01 - Splash) -->
     <string name="splash_title">SecureUP</string>
     <string name="splash_subtitle">Seguridad sin compromisos</string>
@@ -56,19 +60,101 @@
     <!-- Inicio / Dashboard (A09a) -->
     <string name="home_title">Mi Seguridad</string>
     <string name="home_score_label">Security Score</string>
-    <string name="home_score_value">78</string>
-    <string name="home_score_max">/ 100</string>
-    <string name="home_passwords_label">Contraseñas</string>
-    <string name="home_passwords_value">12 Guardadas</string>
-    <string name="home_breaches_label">Brechas</string>
-    <string name="home_breaches_value">2 detectadas</string>
+    <string name="home_scans_label">Escaneos</string>
+    <string name="home_scans_value">%1$d realizados</string>
+    <string name="home_alerts_label">Alertas</string>
+    <string name="home_alerts_value">%1$d detectadas</string>
     <string name="home_quick_access_label">Accesos rápidos</string>
-    <string name="home_new_entry_button">+ Nueva entrada</string>
+    <string name="home_breach_button">Verificar brecha</string>
     <string name="home_scan_qr_button">Escanear QR</string>
+    <string name="home_last_scan_label">Último escaneo</string>
 
     <!-- Navegación inferior -->
     <string name="nav_home">Inicio</string>
-    <string name="nav_vault">Bóveda</string>
+    <string name="nav_breach">Brechas</string>
     <string name="nav_scanner">Escáner</string>
     <string name="nav_profile">Perfil</string>
+
+    <!-- Verificador de brechas (A06) -->
+    <string name="breach_title">Verificador de brechas</string>
+    <string name="breach_subtitle">Comprueba si una contraseña apareció en filtraciones conocidas, sin enviarla a ningún servidor.</string>
+    <string name="breach_privacy_note">Tu contraseña nunca sale del dispositivo. Solo se envía un prefijo de 5 caracteres de su hash SHA-1 (k-anonimato).</string>
+    <string name="breach_password_label">Contraseña a verificar</string>
+    <string name="breach_password_placeholder">Escríbela solo para esta consulta</string>
+    <string name="breach_check_button">Verificar contraseña</string>
+    <string name="breach_checking">Consultando el catálogo de brechas…</string>
+    <string name="breach_error_password_required">Escribe una contraseña para verificar</string>
+    <string name="breach_error_network">No se pudo conectar con el servicio de brechas. Revisa tu conexión e intenta de nuevo.</string>
+    <string name="breach_error_server">El servicio de brechas no está disponible ahora. Intenta más tarde.</string>
+    <string name="breach_error_invalid_response">La respuesta del servicio no es válida. Intenta de nuevo.</string>
+    <string name="breach_not_found_badge">Sin coincidencias</string>
+    <string name="breach_not_found_title">Esta contraseña no aparece en el catálogo consultado</string>
+    <string name="breach_not_found_description">No significa que sea segura: usa una contraseña larga y única para cada servicio, y activa la verificación en dos pasos.</string>
+    <string name="breach_found_badge">Expuesta</string>
+    <string name="breach_found_title">Esta contraseña aparece en filtraciones</string>
+    <string name="breach_found_description">Se encontró %1$s veces en el catálogo de brechas conocidas. Cámbiala en todos los servicios donde la uses y activa la verificación en dos pasos.</string>
+
+    <!-- Escáner QR (A08) -->
+    <string name="scanner_title">Escáner QR</string>
+    <string name="scanner_gallery_button">Galería</string>
+    <string name="scanner_history_button">Historial</string>
+    <string name="scanner_permission_title">Permiso de cámara</string>
+    <string name="scanner_permission_rationale">SecureUP usa la cámara solo para leer códigos QR. Las imágenes se procesan en tu dispositivo y no se envían a ningún servidor.</string>
+    <string name="scanner_permission_denied">No se concedió el permiso. Puedes volver a intentarlo o elegir una imagen de la galería.</string>
+    <string name="scanner_permission_button">Permitir cámara</string>
+    <string name="scanner_error_no_qr">No se encontró ningún código QR en la imagen. Prueba con otra imagen.</string>
+    <string name="scanner_torch">Linterna</string>
+
+    <!-- Resultado QR (A09a/A09b/A09c) -->
+    <string name="result_title">Resultado del escaneo</string>
+    <string name="result_url_label">URL analizada</string>
+    <string name="result_reasons_title">Señales detectadas</string>
+    <string name="result_no_open_note">Por seguridad, SecureUP no abre URLs sospechosas o peligrosas. Copia la dirección solo si confías en su origen.</string>
+    <string name="result_open_button">Abrir en el navegador</string>
+    <string name="result_scan_again_button">Escanear otro QR</string>
+    <string name="result_history_button">Ver historial</string>
+    <string name="result_no_browser">No hay un navegador disponible para abrir esta URL.</string>
+    <string name="result_badge_safe">Seguro</string>
+    <string name="result_badge_suspicious">Sospechoso</string>
+    <string name="result_badge_dangerous">Peligroso</string>
+    <string name="result_title_safe">Sin amenazas conocidas</string>
+    <string name="result_title_suspicious">Esta URL es sospechosa</string>
+    <string name="result_title_dangerous">No abras esta URL</string>
+    <string name="result_description_safe">El análisis local no encontró señales de riesgo. Esto no garantiza que el sitio sea legítimo: verifica siempre el dominio.</string>
+    <string name="result_description_suspicious">La URL tiene características que suelen usarse en fraudes. Verifica el dominio antes de continuar.</string>
+    <string name="result_description_dangerous">La URL no es segura para abrir. Podría intentar robar tus datos o instalar software malicioso.</string>
+    <string name="result_reason_invalid">No es una URL válida.</string>
+    <string name="result_reason_scheme">No es un enlace web http o https.</string>
+    <string name="result_reason_no_tls">La conexión no usa HTTPS: los datos viajarían sin cifrar.</string>
+    <string name="result_reason_ip">El dominio es una dirección IP en lugar de un nombre.</string>
+    <string name="result_reason_punycode">El dominio usa caracteres internacionales codificados (posible suplantación).</string>
+    <string name="result_reason_user_info">La URL incluye un usuario antes del dominio real.</string>
+    <string name="result_reason_shortener">Usa un acortador que oculta el destino final.</string>
+    <string name="result_reason_long">La URL es inusualmente larga.</string>
+
+    <!-- Historial de escaneos -->
+    <string name="history_title">Historial de escaneos</string>
+    <string name="history_export_button">Exportar PDF</string>
+    <string name="history_clear_button">Borrar todo</string>
+    <string name="history_export_file_name">secureup-historial.pdf</string>
+    <string name="history_export_success">PDF generado correctamente.</string>
+    <string name="history_export_error">No se pudo generar el PDF. Intenta de nuevo.</string>
+    <string name="history_empty_title">Todavía no hay escaneos</string>
+    <string name="history_empty_description">Los códigos QR que escanees aparecerán aquí, con su veredicto y la fecha.</string>
+    <string name="history_clear_dialog_title">¿Borrar todo el historial?</string>
+    <string name="history_clear_dialog_text">Se eliminarán todos los escaneos guardados en este dispositivo. Esta acción no se puede deshacer.</string>
+    <string name="history_clear_confirm">Borrar</string>
+
+    <!-- Perfil -->
+    <string name="profile_title">Perfil</string>
+    <string name="profile_no_session">Sesión no iniciada</string>
+    <string name="profile_version">SecureUP %1$s</string>
+    <string name="profile_privacy_title">Tus datos, en tu dispositivo</string>
+    <string name="profile_privacy_body">El historial de escaneos se guarda en una base de datos local. SecureUP no envía tus contraseñas ni tus imágenes a ningún servidor.</string>
+    <string name="profile_coming_soon_title">Próximamente</string>
+    <string name="profile_coming_soon_body">La bóveda de contraseñas y el cambio de contraseña maestra llegarán en la versión 26.3.1.</string>
+    <string name="profile_logout_button">Cerrar sesión</string>
+    <string name="profile_logout_dialog_title">¿Cerrar sesión?</string>
+    <string name="profile_logout_dialog_text">Se borrarán de la memoria la sesión y las claves derivadas. El historial guardado en este dispositivo se conserva.</string>
+    <string name="profile_logout_confirm">Cerrar sesión</string>
 </resources>

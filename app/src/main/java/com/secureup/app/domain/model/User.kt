@@ -1,4 +1,4 @@
-package com.secureup.app.model
+package com.secureup.app.domain.model
 
 /**
  * Modelo de dominio para representar al usuario autenticado.

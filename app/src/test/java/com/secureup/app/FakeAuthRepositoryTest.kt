@@ -1,7 +1,7 @@
 package com.secureup.app
 
-import com.secureup.app.data.repository.AuthResult
 import com.secureup.app.data.repository.FakeAuthRepository
+import com.secureup.app.domain.repository.AuthResult
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
