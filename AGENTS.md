@@ -154,7 +154,7 @@ Autenticación con JWT de vida corta en header `Authorization: Bearer`.
 8. Escáner QR + resultado + historial. Aquí entran `<uses-permission android:name="android.permission.CAMERA" />` (en tiempo de ejecución) y `<uses-feature android:name="android.hardware.camera.any" android:required="false" />`.
 9. Perfil (logout, cambiar contraseña maestra, eliminar cuenta).
 
-Marca aquí el paso en el que vamos: **Paso actual: 4**
+Marca aquí el paso en el que vamos: **Paso actual: 5**
 
 ## 9. Documentación oficial (consultar antes de usar una API)
 
