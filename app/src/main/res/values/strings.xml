@@ -106,6 +106,7 @@
     <string name="scanner_torch">Linterna</string>
     <string name="scanner_torch_on">Encendida</string>
     <string name="scanner_torch_off">Apagada</string>
+    <string name="scanner_camera_error">No se pudo iniciar la cámara. Puedes escanear un QR desde una imagen de la galería.</string>
 
     <!-- Resultado QR (A09a/A09b/A09c) -->
     <string name="result_title">Resultado del escaneo</string>

@@ -94,6 +94,7 @@ fun ScannerScreen(
         )
     }
     var permissionDenied by rememberSaveable { mutableStateOf(false) }
+    var cameraBindFailed by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -143,6 +144,7 @@ fun ScannerScreen(
                 if (hasCameraPermission) {
                     CameraScannerPreview(
                         onQrDetected = viewModel::onQrDetected,
+                        onCameraUnavailable = { cameraBindFailed = true },
                         modifier = Modifier
                             .fillMaxSize()
                             .background(SecureUpColors.Surface),
@@ -164,6 +166,13 @@ fun ScannerScreen(
             uiState.errorRes?.let { errorRes ->
                 InfoBanner(
                     text = stringResource(id = errorRes),
+                    variant = InfoBannerVariant.Danger,
+                )
+            }
+
+            if (cameraBindFailed) {
+                InfoBanner(
+                    text = stringResource(id = R.string.scanner_camera_error),
                     variant = InfoBannerVariant.Danger,
                 )
             }
@@ -245,11 +254,13 @@ private fun CameraPermissionPrompt(
 @Composable
 private fun CameraScannerPreview(
     onQrDetected: (String) -> Unit,
+    onCameraUnavailable: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentOnQrDetected by rememberUpdatedState(onQrDetected)
+    val currentOnCameraUnavailable by rememberUpdatedState(onCameraUnavailable)
     val scanner = remember {
         BarcodeScanning.getClient(
             BarcodeScannerOptions.Builder()
@@ -327,7 +338,9 @@ private fun CameraScannerPreview(
                             analysis,
                         )
                     } catch (e: Exception) {
-                        // Sin cámara trasera disponible: queda la opción de galería.
+                        // Sin cámara trasera disponible: se avisa a la pantalla
+                        // para que el usuario sepa que queda la galería.
+                        currentOnCameraUnavailable()
                     }
                 }, ContextCompat.getMainExecutor(context))
                 previewView
