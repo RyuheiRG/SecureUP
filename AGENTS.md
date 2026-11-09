@@ -40,11 +40,11 @@ Soy principiante en Kotlin y Android. Es mi primera app. No puedo detectar por m
 
 Remoto: `origin` → https://github.com/RyuheiRG/SecureUP.git
 
-- **`main` está congelado**: solo recibe merges desde `develop` cuando se marque una entrega. Nunca se commitea ni se hace `push` directo a `main`.
-- **`develop`** es la rama de integración. Todo lo que se suba llega primero ahí.
-- Cada cambio nace de `develop` en su propia rama: `feat/<tema>`, `fix/<tema>`, `docs/<tema>` o `chore/<tema>` (kebab-case, corto, **en inglés**: `feat/vault-room`, `fix/login-accessibility`). `main` nunca recibe commits directos.
-- **Antes de empezar a trabajar**: `git switch develop` y `git pull` (o `git pull --ff-only`). Nunca se empieza una rama desde una `develop` desactualizada.
-- Al terminar: `git switch develop`, `git merge --no-ff <rama>` y `git push`.
+- **`main` es el cascarón**: solo contiene la estructura inicial del proyecto (carpetas, documentación y configuración), nunca código funcional. No recibe merges de `develop` ni commits de desarrollo. Las versiones estables se publican desde `develop`.
+- **`develop`** es la rama de integración. Todo llega ahí **solo mediante Pull Request** desde una rama `feature/*`; nunca con commits ni `push` directo.
+- Cada cambio nace de la `develop` más reciente en su propia rama `feature/<tema>` (kebab-case, corto, **en inglés**: `feature/vault-room`, `feature/login-accessibility`). La política del curso solo admite el prefijo `feature/`: no se usan `feat/`, `fix/`, `docs/` ni `chore/`.
+- **Antes de empezar**: `git switch develop` y `git pull --ff-only`. Nunca se empieza una rama desde una `develop` desactualizada.
+- **Al terminar**: `git push -u origin feature/<tema>` y **Pull Request hacia `develop`** en GitHub, con título, descripción, justificación y evidencia de funcionamiento. El merge lo hace el responsable tras revisar; **no se hace `merge` local a `develop`**.
 - Si el `git push` se rechaza por *non-fast-forward* (alguien más subió antes), hacer `git pull` y resolver; **nunca** `git push --force`.
 - Prohibido `git push --force` / `--force-with-lease` en `main` o `develop`, y prohibido `git reset --hard` sin que yo lo pida.
 - Los finales de línea los controla `.gitattributes` (`eol=lf` en el repo, `eol=crlf` en `*.bat`). No se cambia `core.autocrlf` ni se commitea un archivo entero solo por saltos de línea.
@@ -52,6 +52,12 @@ Remoto: `origin` → https://github.com/RyuheiRG/SecureUP.git
 - Antes de commitear: `.\gradlew assembleDebug` y `.\gradlew lintDebug` deben pasar (0 errores). Si algo falla, no se commitea.
 - **Nunca se sube**: `local.properties`, `build/`, `.gradle/`, `.idea/`, `*.iml`, `*.jks`/keystores, ni secretos, claves o tokens. Ya están en `.gitignore`; si algo así aparece en `git status`, no se agrega.
 - No se sube código que no compile, con logs sensibles o con datos de prueba que parezcan reales.
+
+### 3.2 Versiones y releases
+
+- Formato `AA.M.m`: año de dos dígitos, cambio mayor y cambio menor (por ejemplo `26.1.1`). Los contadores empiezan en 1.
+- La versión se refleja en `versionName` de `app/build.gradle.kts` al publicar una entrega estable, no en cada commit.
+- Cada versión estable se registra como **release de GitHub** con tag `vAA.M.m`, creado **desde `develop`**. Nunca desde `main`.
 
 ## 4. Arquitectura: MVVM (requisito de la maestra)
 
