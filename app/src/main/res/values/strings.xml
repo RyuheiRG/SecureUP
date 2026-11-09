@@ -104,6 +104,8 @@
     <string name="scanner_permission_button">Permitir cámara</string>
     <string name="scanner_error_no_qr">No se encontró ningún código QR en la imagen. Prueba con otra imagen.</string>
     <string name="scanner_torch">Linterna</string>
+    <string name="scanner_torch_on">Encendida</string>
+    <string name="scanner_torch_off">Apagada</string>
 
     <!-- Resultado QR (A09a/A09b/A09c) -->
     <string name="result_title">Resultado del escaneo</string>

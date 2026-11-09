@@ -46,6 +46,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -357,6 +359,9 @@ private fun CameraOverlay(
     onToggleTorch: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val torchStateText = stringResource(
+        id = if (torchEnabled) R.string.scanner_torch_on else R.string.scanner_torch_off,
+    )
     IconButton(
         onClick = onToggleTorch,
         modifier = modifier
@@ -364,7 +369,10 @@ private fun CameraOverlay(
             .background(
                 color = SecureUpColors.Background.copy(alpha = 0.6f),
                 shape = CircleShape,
-            ),
+            )
+            .semantics {
+                stateDescription = torchStateText
+            },
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_flashlight),
