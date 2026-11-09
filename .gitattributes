@@ -1,0 +1,25 @@
+# Normaliza los finales de línea de todo el repositorio.
+#
+# Por qué: en Windows, Git suele guardar CRLF en el working tree. Si otra
+# máquina tiene otra configuración (core.autocrlf distinto), cada archivo
+# aparece como "modificado completo" en cada commit y los merges dan
+# conflictos falsos. Con esta regla el repositorio guarda LF para todos.
+* text=auto eol=lf
+
+# Scripts de Windows: deben conservar CRLF o cmd.exe los lee mal.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Script de shell del Gradle wrapper: debe conservar LF.
+gradlew text eol=lf
+
+# Binarios: nunca se convierten ni se comparan como texto.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.jar binary
+*.jks binary
+*.keystore binary
