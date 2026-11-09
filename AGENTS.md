@@ -103,8 +103,8 @@ Dentro del alcance: registro/login, CRUD de entradas del vault cifradas, verific
 
 1. **Nunca implementes criptografía propia.** Solo primitivas estándar de la plataforma (`javax.crypto`, Android Keystore). Prohibido: AES en modo ECB, claves fijas en el código, IV/nonce reutilizado, `Random` en vez de `SecureRandom`.
 2. **La contraseña maestra nunca se guarda ni se envía al servidor**, ni siquiera cifrada. Solo vive en memoria durante la sesión.
-3. **La clave de cifrado del vault nunca sale del dispositivo ni se persiste.** Se deriva de la contraseña maestra + `salt_vault` y vive solo en RAM.
-4. **Dos derivaciones distintas** a partir de la contraseña maestra, con salts distintos: una para autenticación (`auth_hash`, lo que ve el servidor) y otra para la clave del vault (el servidor nunca la ve).
+3. **La clave de cifrado del vault nunca sale del dispositivo ni se persiste.** Se deriva de la contraseña maestra + `salt` y vive solo en RAM.
+4. **Una sola derivación costosa y dos etiquetas.** `masterKey = PBKDF2(contraseña_maestra, salt, iteraciones)`; de ella salen `auth_hash` y la clave del vault con `HMAC-SHA256(masterKey, etiqueta || 0x01)` (HKDF-Expand de un bloque). Con dos derivaciones PBKDF2 y salts que elige el servidor, un servidor malicioso puede devolver `salt_vault` como `salt_auth` y recibir la clave del vault disfrazada de `auth_hash`; con una sola derivación, `authHash` es una salida de HMAC con otra etiqueta y no se puede convertir en la clave del vault.
 5. **Nunca loggear** contraseñas, hashes, tokens, claves, ni el contenido de requests de auth/vault (`Log.d` incluido). Revisa que no queden logs sensibles.
 6. **Sin secretos en el código ni en el repo.** Ninguna API key en la app (las llamadas a HIBP/Safe Browsing las hace el backend como proxy). Si hace falta configuración local, va en `local.properties` (ya está en `.gitignore`).
 7. **Solo HTTPS.** Excepción permitida: tráfico en claro a `10.0.2.2` (emulador → backend local) únicamente en build `debug`, mediante `network_security_config`.
@@ -112,21 +112,25 @@ Dentro del alcance: registro/login, CRUD de entradas del vault cifradas, verific
 9. Desactivar capturas de pantalla (`FLAG_SECURE`) en pantallas que muestren contraseñas.
 10. Validar y sanear toda entrada de usuario. En el QR, tratar la URL como no confiable: nunca abrirla sin mostrar el veredicto antes.
 11. Si detectas una vulnerabilidad o mala práctica en código existente, **repórtala aunque no te lo haya pedido**.
+12. AndroidManifest: `android:allowBackup="false"` (o exclusiones en `dataExtractionRules`/`fullBackupContent`), un solo componente exportado (el launcher) y permisos mínimos (`CAMERA` en tiempo de ejecución, `INTERNET`).
+13. QR: abrir solo `http`/`https`, mostrar siempre la URL completa y nunca abrir automáticamente.
 
 ## 7. Diseño criptográfico y de API (referencia)
 
 **Cliente**
-- Clave del vault: `PBKDF2WithHmacSHA256(contraseña_maestra, salt_vault, iteraciones, 256 bits)`. Usar el valor de iteraciones recomendado hoy por OWASP (verificar en el enlace de la sección 9; no usar menos de 600 000 sin avisarme).
-- Cifrado de cada entrada: `AES-256-GCM`, nonce aleatorio de 12 bytes por operación, guardar `ciphertext + nonce`. GCM autentica: si el descifrado falla, tratarlo como manipulación.
-- `auth_hash`: `PBKDF2WithHmacSHA256(contraseña_maestra, salt_auth, ...)`, con `salt_auth` distinto de `salt_vault`.
+- Clave del vault y `auth_hash`: **una sola derivación** `masterKey = PBKDF2WithHmacSHA256(contraseña_normalizada_NFC, salt, iteraciones, 256 bits)` y después **HKDF-Expand de un bloque** (RFC 5869): `auth_hash = HMAC-SHA256(masterKey, "secureup-auth-v1" || 0x01)` y `clave_vault = HMAC-SHA256(masterKey, "secureup-vault-v1" || 0x01)`. Con dos PBKDF2 y salts que elige el servidor, un servidor malicioso puede devolver `salt_vault` como `salt_auth` y recibir la clave del vault disfrazada de `auth_hash`. Usar el valor de iteraciones recomendado hoy por OWASP (verificar en el enlace de la sección 9; no usar menos de 600 000 sin avisarme). La contraseña se **normaliza a NFC** (`java.text.Normalizer`) antes de derivar: "ñ" puede llegar como `U+00F1` o como `n` + `U+0303`, y sin normalizar la misma contraseña escrita en dos teclados daría claves distintas.
+- Cifrado de cada entrada: `AES-256-GCM`, nonce aleatorio de 12 bytes por operación, tag de 128 bits. El blob guardado es `[0x01][nonce 12][ciphertext + tag]`: un solo `ByteArray` con byte de versión, para poder migrar de algoritmo sabiendo qué formato tiene cada fila. GCM autentica: si el descifrado falla, tratarlo como manipulación.
+- **AAD = UUID de la entrada**, generado en el cliente. Ata el blob a su entrada: si el servidor intercambia dos blobs, el descifrado falla en vez de mostrar la contraseña de otra cuenta.
+- El cliente **rechaza** cualquier `iterations` fuera de `[600 000, 3 000 000]` aunque venga del servidor: un backend comprometido no puede degradar el KDF ni colgar el dispositivo con un valor absurdo. También rechaza cualquier `kdf_version` distinta de la que implementa.
+- `kdf_version` y `kdf_iterations` se guardan **por usuario**. Si OWASP sube el coste, los vaults viejos se siguen derivando con su valor original y se migran al cambiar la contraseña maestra; por eso no basta con una constante en el código.
 - Brecha (k-anonimato): `SHA-1(password)` → enviar solo los **5 primeros caracteres** del hash; comparar el resto localmente. La contraseña completa nunca sale del dispositivo.
 - Cambiar contraseña maestra: descifrar todo con la clave vieja, re-cifrar todo con la nueva, subir el vault completo en **una sola operación atómica**.
 
 **Endpoints previstos (backend)**
-`POST /api/auth/register` · `GET /api/auth/salt?email=` · `POST /api/auth/login` · `GET|POST|PUT|DELETE /api/vault` · `POST /api/breach-check` · `POST /api/qr-check` · `DELETE /api/account` (pendiente)
+`POST /api/auth/register` · `GET /api/auth/salt?email=` (devuelve `salt`, `kdf_version` y `kdf_iterations`) · `POST /api/auth/login` · `GET|POST|PUT|DELETE /api/vault` · `POST /api/breach-check` · `POST /api/qr-check` · `DELETE /api/account` (pendiente)
 Autenticación con JWT de vida corta en header `Authorization: Bearer`.
 
-**Tablas (backend)**: `usuarios` (id UUID, email único, auth_hash, salt_auth, salt_vault), `vault_entries` (id, user_id, ciphertext, nonce, timestamps), `scan_history` (id, user_id, url, veredicto, scanned_at). FK con `ON DELETE CASCADE`.
+**Tablas (backend)**: `usuarios` (id UUID, email único, auth_hash, kdf_salt, kdf_version, kdf_iterations), `vault_entries` (id UUID **generado en el cliente** —es el AAD del cifrado—, user_id, blob, timestamps), `scan_history` (id, user_id, url, veredicto, scanned_at). FK con `ON DELETE CASCADE`.
 
 **Local (Room)**: caché del vault ya cifrado. Nunca texto plano en disco.
 
@@ -139,9 +143,9 @@ Autenticación con JWT de vida corta en header `Authorization: Bearer`.
 3. Navegación (Compose Navigation): Login → Dashboard con barra inferior.
 4. `CryptoManager` (PBKDF2 + AES-GCM) **con pruebas unitarias**: cifrar→descifrar, nonce distinto por operación, fallo al alterar un byte del ciphertext.
 5. Vault local con Room + pantallas Vault (lista, detalle, nueva entrada).
-6. Retrofit + `AuthRepository` real contra el backend.
+6. Retrofit + `AuthRepository` real contra el backend. Aquí entra `<uses-permission android:name="android.permission.INTERNET" />` (no antes: un permiso sin uso viola el mínimo privilegio). Al añadir `network_security_config`, recordar que el XML manda sobre `android:usesCleartextTraffic` desde API 24: la excepción de `10.0.2.2` va solo en `src/debug/res/xml/` y la versión de `src/main/res/xml/` prohíbe el tráfico en claro. Verificar en la documentación antes de implementarlo.
 7. Verificación de brecha.
-8. Escáner QR + resultado + historial.
+8. Escáner QR + resultado + historial. Aquí entran `<uses-permission android:name="android.permission.CAMERA" />` (en tiempo de ejecución) y `<uses-feature android:name="android.hardware.camera.any" android:required="false" />`.
 9. Perfil (logout, cambiar contraseña maestra, eliminar cuenta).
 
 Marca aquí el paso en el que vamos: **Paso actual: 4**
