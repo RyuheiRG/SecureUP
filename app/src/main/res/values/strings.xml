@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Secure UP</string>
 
     <!-- Común -->
@@ -14,7 +14,7 @@
     <string name="onboarding_1_description">Toda tu información se encripta de forma local con algoritmo AES-256. Nadie más puede acceder, ni siquiera nosotros.</string>
     <string name="onboarding_next">Siguiente</string>
     <string name="onboarding_2_title">Verifica sin exponer tus datos</string>
-    <string name="onboarding_2_description">Escanea filtraciones de seguridad de tus cuentas de forma segura sin revelar tu clave maestra en ningún momento.</string>
+    <string name="onboarding_2_description" tools:ignore="Typos">Escanea filtraciones de seguridad de tus cuentas de forma segura sin revelar tu clave maestra en ningún momento.</string>
     <string name="onboarding_start">Comenzar</string>
 
     <!-- Login (auth02-login) -->
