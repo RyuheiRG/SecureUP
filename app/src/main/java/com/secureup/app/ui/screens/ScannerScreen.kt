@@ -46,6 +46,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -92,6 +94,7 @@ fun ScannerScreen(
         )
     }
     var permissionDenied by rememberSaveable { mutableStateOf(false) }
+    var cameraBindFailed by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -141,6 +144,7 @@ fun ScannerScreen(
                 if (hasCameraPermission) {
                     CameraScannerPreview(
                         onQrDetected = viewModel::onQrDetected,
+                        onCameraUnavailable = { cameraBindFailed = true },
                         modifier = Modifier
                             .fillMaxSize()
                             .background(SecureUpColors.Surface),
@@ -162,6 +166,13 @@ fun ScannerScreen(
             uiState.errorRes?.let { errorRes ->
                 InfoBanner(
                     text = stringResource(id = errorRes),
+                    variant = InfoBannerVariant.Danger,
+                )
+            }
+
+            if (cameraBindFailed) {
+                InfoBanner(
+                    text = stringResource(id = R.string.scanner_camera_error),
                     variant = InfoBannerVariant.Danger,
                 )
             }
@@ -243,11 +254,13 @@ private fun CameraPermissionPrompt(
 @Composable
 private fun CameraScannerPreview(
     onQrDetected: (String) -> Unit,
+    onCameraUnavailable: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentOnQrDetected by rememberUpdatedState(onQrDetected)
+    val currentOnCameraUnavailable by rememberUpdatedState(onCameraUnavailable)
     val scanner = remember {
         BarcodeScanning.getClient(
             BarcodeScannerOptions.Builder()
@@ -325,7 +338,9 @@ private fun CameraScannerPreview(
                             analysis,
                         )
                     } catch (e: Exception) {
-                        // Sin cámara trasera disponible: queda la opción de galería.
+                        // Sin cámara trasera disponible: se avisa a la pantalla
+                        // para que el usuario sepa que queda la galería.
+                        currentOnCameraUnavailable()
                     }
                 }, ContextCompat.getMainExecutor(context))
                 previewView
@@ -357,6 +372,9 @@ private fun CameraOverlay(
     onToggleTorch: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val torchStateText = stringResource(
+        id = if (torchEnabled) R.string.scanner_torch_on else R.string.scanner_torch_off,
+    )
     IconButton(
         onClick = onToggleTorch,
         modifier = modifier
@@ -364,7 +382,10 @@ private fun CameraOverlay(
             .background(
                 color = SecureUpColors.Background.copy(alpha = 0.6f),
                 shape = CircleShape,
-            ),
+            )
+            .semantics {
+                stateDescription = torchStateText
+            },
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_flashlight),

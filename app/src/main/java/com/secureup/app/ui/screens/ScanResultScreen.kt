@@ -2,7 +2,6 @@ package com.secureup.app.ui.screens
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.secureup.app.R
 import com.secureup.app.domain.model.ScanVerdict
@@ -202,7 +202,7 @@ private fun RiskReasonRow(reason: UrlRiskReason) {
 }
 
 private fun openUrl(context: android.content.Context, url: String) {
-    val uri = Uri.parse(url)
+    val uri = url.toUri()
     if (uri.scheme != "http" && uri.scheme != "https") return
     val intent = Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     try {
