@@ -107,10 +107,14 @@ fun ScannerScreen(
     }
 
     LaunchedEffect(uiState.detectedUrl) {
-        uiState.detectedUrl?.let { url ->
-            onResult(url)
-            viewModel.consumeDetection()
-        }
+        uiState.detectedUrl?.let(onResult)
+    }
+
+    // La detección se consume al salir de composición, no al navegar: la cámara
+    // sigue entregando fotogramas durante la transición y el ViewModel debe
+    // mantener la guarda activa para no guardar el mismo QR otra vez.
+    DisposableEffect(Unit) {
+        onDispose { viewModel.consumeDetection() }
     }
 
     Scaffold(
