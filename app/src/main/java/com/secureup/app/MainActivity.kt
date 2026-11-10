@@ -6,11 +6,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.secureup.app.ui.navigation.AppNavigation
 import com.secureup.app.ui.theme.SecureUPTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Splash nativo: debe instalarse antes de super.onCreate().
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         // La app es solo tema oscuro: forzamos iconos claros en las barras del sistema.
         // Con el valor por defecto (SystemBarStyle.auto) los iconos serían oscuros si el

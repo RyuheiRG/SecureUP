@@ -14,4 +14,16 @@
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
+    <!--
+      Splash nativo (SplashScreen API vía androidx.core:core-splashscreen).
+      Mismo fondo que el tema principal para que la transición no destelle.
+      El icono es el logo de marca con margen: el sistema lo recorta en un
+      círculo de 192 dp dentro de un lienzo de 288 dp (ver secureup_splash_icon).
+    -->
+    <style name="Theme.SecureUP.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/secureup_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/secureup_splash_icon</item>
+        <item name="postSplashScreenTheme">@style/Theme.SecureUP</item>
+    </style>
+
 </resources>
