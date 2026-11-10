@@ -26,7 +26,7 @@ import kotlinx.coroutines.delay
 
 /**
  * Pantalla de Inicio / Splash (Frame A01 - Splash).
- * Muestra el título de la app y el eslogan centrados en la pantalla.
+ * Muestra el logo de la app y el eslogan centrados en la pantalla.
  * Avanza automáticamente después de un breve retardo (1.5 s).
  */
 @Composable
@@ -50,19 +50,12 @@ fun SplashScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
-                painter = painterResource(id = R.drawable.ic_splash_logo),
-                contentDescription = null, // decorativo: el título ya describe la app
-                modifier = Modifier.size(96.dp),
+                painter = painterResource(id = R.drawable.secureup_logo),
+                contentDescription = null, // decorativo: el logo ya contiene el nombre
+                modifier = Modifier.size(180.dp),
             )
 
             Spacer(modifier = Modifier.height(Spacing.L))
-
-            Text(
-                text = stringResource(id = R.string.splash_title),
-                style = MaterialTheme.typography.headlineLarge,
-                color = SecureUpColors.TextPrimary,
-                textAlign = TextAlign.Center,
-            )
 
             Text(
                 text = stringResource(id = R.string.splash_subtitle),

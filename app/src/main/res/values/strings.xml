@@ -6,7 +6,6 @@
     <string name="dialog_cancel">Cancelar</string>
 
     <!-- Splash (A01 - Splash) -->
-    <string name="splash_title">SecureUP</string>
     <string name="splash_subtitle">Seguridad sin compromisos</string>
 
     <!-- Onboarding 1 y 2 (A02 y A03) -->
