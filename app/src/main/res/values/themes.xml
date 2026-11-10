@@ -14,4 +14,15 @@
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
+    <!--
+      Splash nativo (SplashScreen API vía androidx.core:core-splashscreen).
+      Mismo fondo que el tema principal para que la transición no destelle.
+      El logo es el escudo de marca ya existente (ic_shield_check_blue escalado).
+    -->
+    <style name="Theme.SecureUP.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/secureup_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.SecureUP</item>
+    </style>
+
 </resources>
