@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
 class QrCodeReader(
     private val context: Context,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) {
+) : QrImageReader {
 
     private val scanner: BarcodeScanner = BarcodeScanning.getClient(
         BarcodeScannerOptions.Builder()
@@ -32,7 +32,7 @@ class QrCodeReader(
             .build()
     )
 
-    suspend fun read(uri: Uri): String? = withContext(ioDispatcher) {
+    override suspend fun read(uri: Uri): String? = withContext(ioDispatcher) {
         val bitmap = decodeSampledBitmap(uri) ?: return@withContext null
         try {
             val image = InputImage.fromBitmap(bitmap, 0)
