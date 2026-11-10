@@ -135,14 +135,14 @@ Requisitos: JDK 17 o superior, Android SDK con API 37 y un dispositivo/emulador 
 .\gradlew assembleDebug
 # APK: app/build/outputs/apk/debug/app-debug.apk
 
-# Pruebas unitarias (67 pruebas)
+# Pruebas unitarias (71 pruebas)
 .\gradlew testDebugUnitTest
 
 # Análisis estático
 .\gradlew lintDebug
 ```
 
-Resultado de la última verificación: **67 pruebas, 0 fallos** y **lint 0 errores, 25 advertencias**.
+Resultado de la última verificación: **71 pruebas, 0 fallos** y **lint 0 errores, 22 advertencias**.
 
 ## Alcance y limitaciones
 
