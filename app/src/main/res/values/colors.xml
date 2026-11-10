@@ -6,4 +6,6 @@
       Valor = token Background de DESIGN.md.
     -->
     <color name="secureup_background">#FF0F1115</color>
+    <!-- Azul marino del logo de marca (ícono del launcher). -->
+    <color name="secureup_logo_navy">#FF15274B</color>
 </resources>
