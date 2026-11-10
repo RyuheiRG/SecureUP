@@ -6,6 +6,6 @@
     android:viewportHeight="108">
     <!-- Fondo del ícono adaptativo: token Background de DESIGN.md. -->
     <path
-        android:fillColor="@color/secureup_background"
+        android:fillColor="@color/secureup_logo_navy"
         android:pathData="M0,0h108v108h-108z" />
 </vector>
