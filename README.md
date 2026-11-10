@@ -34,9 +34,9 @@ Proyecto académico de **Desarrollo de Aplicaciones Móviles** (Kotlin + Jetpack
 | --- | --- |
 | ![QR seguro](docs/evidencias/03-qr-seguro.png) | ![QR peligroso](docs/evidencias/04-qr-peligroso.png) |
 
-| Inicio (score real) | Historial |
-| --- | --- |
-| ![Inicio](docs/evidencias/05-inicio-score.png) | ![Historial](docs/evidencias/06-historial.png) |
+| Inicio (score real) | Historial | Splash |
+| --- | --- | --- |
+| ![Inicio](docs/evidencias/05-inicio-score.png) | ![Historial](docs/evidencias/06-historial.png) | ![Splash](docs/evidencias/08-splash.png) |
 
 ## Funcionalidades
 
