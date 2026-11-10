@@ -20,6 +20,7 @@ Proyecto académico de **Desarrollo de Aplicaciones Móviles** (Kotlin + Jetpack
 | Historial | ✅ | Persistencia en Room, exportación a PDF y borrado |
 | Inicio | ✅ | Security Score calculado con el historial real |
 | Perfil | ✅ | Cuenta de la sesión y cierre de sesión |
+| Identidad visual | ✅ | Splash nativo con logo de marca e ícono de launcher definitivo |
 | Bóveda de contraseñas | ⏳ | Pospuesta a la entrega `26.3.1` por decisión de alcance |
 | Backend propio | ⏳ | API REST en un repositorio aparte, todavía no disponible |
 
@@ -54,6 +55,7 @@ Proyecto académico de **Desarrollo de Aplicaciones Móviles** (Kotlin + Jetpack
 - También se puede elegir una imagen de la galería (Photo Picker, sin permisos de almacenamiento).
 - `UrlAnalyzer` aplica reglas locales: esquema permitido, HTTPS, IP como host, punycode, user-info, acortadores y longitud excesiva.
 - Solo las URLs **seguras** ofrecen el botón «Abrir en el navegador». Las sospechosas o peligrosas nunca se abren automáticamente.
+- **Sin duplicados:** si la cámara entrega el mismo QR en varios fotogramas, se registra una sola vez en el historial.
 
 ### Historial y PDF
 
