@@ -145,10 +145,10 @@
 
 <h2>1. Resumen ejecutivo</h2>
 <p>SecureUP es una aplicación Android que reúne tres herramientas de seguridad personal en una sola cuenta: la verificación de contraseñas expuestas en brechas conocidas, el escaneo de códigos QR con análisis de la URL de destino y el historial local de los escaneos realizados.</p>
-<p>La entrega <strong>26.2.1</strong> implementa un corte vertical completo y verificable: autenticación simulada, verificador de brechas contra la API real de Have I Been Pwned, escáner QR con CameraX y ML Kit, análisis heurístico local, persistencia en Room, exportación del historial a PDF y perfil con cierre de sesión. La aplicación compila, pasa el análisis estático y las 67 pruebas unitarias, y fue probada en un dispositivo físico y en un emulador.</p>
+<p>La entrega <strong>26.2.1</strong> implementa un corte vertical completo y verificable: autenticación simulada, verificador de brechas contra la API real de Have I Been Pwned, escáner QR con CameraX y ML Kit, análisis heurístico local, persistencia en Room, exportación del historial a PDF y perfil con cierre de sesión. La aplicación compila, pasa el análisis estático y las 71 pruebas unitarias, y fue probada en un dispositivo físico y en un emulador. Esta entrega incluye splash nativo con la marca y deduplicación de escaneos QR para que un mismo código no se registre varias veces en el historial.</p>
 
 <div class="kpi">
-  <div><strong>67</strong><span>pruebas unitarias, 0 fallos</span></div>
+  <div><strong>71</strong><span>pruebas unitarias, 0 fallos</span></div>
   <div><strong>0</strong><span>errores de lint</span></div>
   <div><strong>3</strong><span>integraciones reales</span></div>
   <div><strong>52,3 M</strong><span>apariciones de “password” en HIBP</span></div>
@@ -236,7 +236,9 @@
   <li><strong>Cámara:</strong> CameraX con <code>Preview</code> e <code>ImageAnalysis</code> en modo <code>KEEP_ONLY_LATEST</code>. Un <code>AtomicBoolean</code> evita analizar dos fotogramas a la vez y cada <code>ImageProxy</code> se cierra en <code>addOnCompleteListener</code>, incluso si ML Kit falla.</li>
   <li><strong>Galería:</strong> Photo Picker (<code>PickVisualMedia</code>), sin permiso de almacenamiento. <code>QrCodeReader</code> reduce la imagen antes de decodificarla y recicla el bitmap.</li>
   <li><strong>Permiso:</strong> <code>CAMERA</code> se pide en tiempo de ejecución con explicación; si se deniega, queda la galería.</li>
-  <li><strong>Linterna:</strong> botón superpuesto que alterna <code>enableTorch</code>.</li>
+  <li><strong>Linterna:</strong> botón superpuesto que alterna <code>enableTorch</code> y anuncia su estado a los servicios de accesibilidad.</li>
+  <li><strong>Errores de cámara:</strong> si la cámara no puede iniciarse, se muestra un aviso y queda disponible la galería.</li>
+  <li><strong>Sin duplicados:</strong> la detección se mantiene activa hasta salir de la pantalla y se descarta la repetición del mismo QR en una ventana corta; un solo escaneo produce una sola fila en el historial. Cuatro pruebas unitarias cubren esta lógica.</li>
 </ul>
 
 <h3>5.4 Reglas de <code>UrlAnalyzer</code></h3>
@@ -308,7 +310,7 @@ suspend fun getRange(@Path("prefix") prefix: String): Response&lt;String&gt;</pr
   <tr><td>Secretos</td><td>Ninguna API key en la app ni en el repositorio.</td></tr>
 </table>
 <div class="ok">
-  <strong>Verificación automática:</strong> <code>lintDebug</code> terminó con <strong>0 errores</strong> y 25 advertencias (targetSdk no reciente, tamaños de vectores heredados y avisos de versiones). No se encontraron llamadas a <code>Log</code> en el código de producción.
+  <strong>Verificación automática:</strong> <code>lintDebug</code> terminó con <strong>0 errores</strong> y 22 advertencias (targetSdk no reciente, recursos sin usar, plurales y avisos de versiones). No se encontraron llamadas a <code>Log</code> en el código de producción.
 </div>
 
 <h2>10. Pruebas y calidad</h2>
@@ -322,8 +324,9 @@ suspend fun getRange(@Path("prefix") prefix: String): Response&lt;String&gt;</pr
   <tr><td><code>AuthViewModelTest</code></td><td>5</td><td>Estados de carga, error y éxito.</td></tr>
   <tr><td><code>BreachViewModelTest</code></td><td>5</td><td>Resultado, error, carga y borrado de la contraseña.</td></tr>
   <tr><td><code>FakeAuthRepositoryTest</code></td><td>4</td><td>Login y registro simulados, incluido el correo de error.</td></tr>
+  <tr><td><code>ScannerViewModelTest</code></td><td>4</td><td>Deduplicación del mismo QR, ventana de tiempo y guardado de un QR distinto.</td></tr>
   <tr><td><code>ExampleUnitTest</code></td><td>1</td><td>Prueba base del proyecto.</td></tr>
-  <tr><td><strong>Total</strong></td><td><strong>67</strong></td><td><strong>0 fallos</strong> · <code>testDebugUnitTest</code></td></tr>
+  <tr><td><strong>Total</strong></td><td><strong>71</strong></td><td><strong>0 fallos</strong> · <code>testDebugUnitTest</code></td></tr>
 </table>
 <p>Además hay 6 pruebas instrumentadas de <code>CryptoManager</code> que repiten los vectores en el proveedor criptográfico de Android (Conscrypt) y una prueba base de instrumentación.</p>
 
@@ -348,8 +351,9 @@ suspend fun getRange(@Path("prefix") prefix: String): Response&lt;String&gt;</pr
   <figure><img src="evidencias/04-qr-peligroso.png" alt="QR peligroso"><figcaption>QR peligroso: no se ofrece abrir</figcaption></figure>
   <figure><img src="evidencias/05-inicio-score.png" alt="Inicio"><figcaption>Inicio con score real (70) y última alerta</figcaption></figure>
   <figure><img src="evidencias/06-historial.png" alt="Historial"><figcaption>Historial persistido en Room</figcaption></figure>
+  <figure><img src="evidencias/08-splash.png" alt="Splash"><figcaption>Splash con el logo de marca</figcaption></figure>
 </div>
-<p class="small">Las capturas se tomaron en el emulador API 35 durante la verificación de esta entrega. El PDF de ejemplo está en <code>docs/evidencias/ejemplo-historial.pdf</code>.</p>
+<p class="small">Las capturas 01–06 se tomaron en el emulador API 35; la captura del splash se tomó en un dispositivo físico durante la verificación de esta entrega. El PDF de ejemplo está en <code>docs/evidencias/ejemplo-historial.pdf</code>.</p>
 
 <h2>12. Limitaciones y trabajo futuro</h2>
 <table>

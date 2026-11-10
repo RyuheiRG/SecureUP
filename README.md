@@ -20,6 +20,7 @@ Proyecto académico de **Desarrollo de Aplicaciones Móviles** (Kotlin + Jetpack
 | Historial | ✅ | Persistencia en Room, exportación a PDF y borrado |
 | Inicio | ✅ | Security Score calculado con el historial real |
 | Perfil | ✅ | Cuenta de la sesión y cierre de sesión |
+| Identidad visual | ✅ | Splash nativo con logo de marca e ícono de launcher definitivo |
 | Bóveda de contraseñas | ⏳ | Pospuesta a la entrega `26.3.1` por decisión de alcance |
 | Backend propio | ⏳ | API REST en un repositorio aparte, todavía no disponible |
 
@@ -33,9 +34,9 @@ Proyecto académico de **Desarrollo de Aplicaciones Móviles** (Kotlin + Jetpack
 | --- | --- |
 | ![QR seguro](docs/evidencias/03-qr-seguro.png) | ![QR peligroso](docs/evidencias/04-qr-peligroso.png) |
 
-| Inicio (score real) | Historial |
-| --- | --- |
-| ![Inicio](docs/evidencias/05-inicio-score.png) | ![Historial](docs/evidencias/06-historial.png) |
+| Inicio (score real) | Historial | Splash |
+| --- | --- | --- |
+| ![Inicio](docs/evidencias/05-inicio-score.png) | ![Historial](docs/evidencias/06-historial.png) | ![Splash](docs/evidencias/08-splash.png) |
 
 ## Funcionalidades
 
@@ -54,6 +55,7 @@ Proyecto académico de **Desarrollo de Aplicaciones Móviles** (Kotlin + Jetpack
 - También se puede elegir una imagen de la galería (Photo Picker, sin permisos de almacenamiento).
 - `UrlAnalyzer` aplica reglas locales: esquema permitido, HTTPS, IP como host, punycode, user-info, acortadores y longitud excesiva.
 - Solo las URLs **seguras** ofrecen el botón «Abrir en el navegador». Las sospechosas o peligrosas nunca se abren automáticamente.
+- **Sin duplicados:** si la cámara entrega el mismo QR en varios fotogramas, se registra una sola vez en el historial.
 
 ### Historial y PDF
 
@@ -135,14 +137,14 @@ Requisitos: JDK 17 o superior, Android SDK con API 37 y un dispositivo/emulador 
 .\gradlew assembleDebug
 # APK: app/build/outputs/apk/debug/app-debug.apk
 
-# Pruebas unitarias (67 pruebas)
+# Pruebas unitarias (71 pruebas)
 .\gradlew testDebugUnitTest
 
 # Análisis estático
 .\gradlew lintDebug
 ```
 
-Resultado de la última verificación: **67 pruebas, 0 fallos** y **lint 0 errores, 25 advertencias**.
+Resultado de la última verificación: **71 pruebas, 0 fallos** y **lint 0 errores, 22 advertencias**.
 
 ## Alcance y limitaciones
 
