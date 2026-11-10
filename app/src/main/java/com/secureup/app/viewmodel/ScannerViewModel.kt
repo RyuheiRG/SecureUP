@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.secureup.app.R
-import com.secureup.app.data.scanner.QrCodeReader
+import com.secureup.app.data.scanner.QrImageReader
 import com.secureup.app.di.AppGraph
 import com.secureup.app.domain.model.ScanRecord
 import com.secureup.app.domain.model.ScanVerdict
@@ -37,12 +37,18 @@ data class ScannerUiState(
  */
 class ScannerViewModel(
     private val scanHistoryRepository: ScanHistoryRepository,
-    private val qrCodeReader: QrCodeReader,
+    private val qrImageReader: QrImageReader,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val analysisDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val nowMillis: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ScannerUiState())
     val uiState: StateFlow<ScannerUiState> = _uiState.asStateFlow()
+
+    /** Última detección aceptada, para descartar ráfagas del mismo fotograma. */
+    private var lastDetectedRaw: String? = null
+    private var lastDetectedAtMillis: Long = 0L
 
     fun onQrDetected(rawValue: String) {
         analyze(rawValue)
@@ -52,7 +58,7 @@ class ScannerViewModel(
         if (_uiState.value.isAnalyzing) return
         _uiState.update { it.copy(isAnalyzing = true, errorRes = null) }
         viewModelScope.launch(ioDispatcher) {
-            val rawValue = qrCodeReader.read(uri)
+            val rawValue = qrImageReader.read(uri)
             if (rawValue.isNullOrBlank()) {
                 _uiState.update {
                     it.copy(isAnalyzing = false, errorRes = R.string.scanner_error_no_qr)
@@ -64,7 +70,19 @@ class ScannerViewModel(
     }
 
     private fun analyze(rawValue: String) {
-        if (_uiState.value.isAnalyzing || _uiState.value.detectedUrl != null) return
+        val state = _uiState.value
+        if (state.isAnalyzing || state.detectedUrl != null) return
+
+        // La cámara entrega el mismo QR en varios fotogramas seguidos (y sigue
+        // entregándolos durante la transición a la pantalla de resultado). Sin
+        // esta ventana, el mismo escaneo se guardaría dos veces en el historial.
+        val now = nowMillis()
+        if (rawValue == lastDetectedRaw && now - lastDetectedAtMillis < DETECTION_DEDUPE_WINDOW_MS) {
+            return
+        }
+        lastDetectedRaw = rawValue
+        lastDetectedAtMillis = now
+
         _uiState.update { it.copy(isAnalyzing = true, errorRes = null) }
         viewModelScope.launch(ioDispatcher) {
             analyzeInternal(rawValue)
@@ -72,7 +90,7 @@ class ScannerViewModel(
     }
 
     private suspend fun analyzeInternal(rawValue: String) {
-        val analysis = withContext(Dispatchers.Default) { UrlAnalyzer.analyze(rawValue) }
+        val analysis = withContext(analysisDispatcher) { UrlAnalyzer.analyze(rawValue) }
         saveToHistory(analysis)
         _uiState.update {
             it.copy(isAnalyzing = false, detectedUrl = analysis.url)
@@ -103,12 +121,17 @@ class ScannerViewModel(
 
     class Factory(
         private val repository: ScanHistoryRepository = AppGraph.container.scanHistoryRepository,
-        private val reader: QrCodeReader = AppGraph.container.qrCodeReader,
+        private val reader: QrImageReader = AppGraph.container.qrCodeReader,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return ScannerViewModel(repository, reader) as T
         }
+    }
+
+    private companion object {
+        /** Ventana para descartar detecciones repetidas del mismo QR. */
+        const val DETECTION_DEDUPE_WINDOW_MS = 1_500L
     }
 }
 
