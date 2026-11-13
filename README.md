@@ -148,7 +148,7 @@ Resultado de la última verificación: **71 pruebas, 0 fallos** y **lint 0 error
 
 ## Alcance y limitaciones
 
-- **No hay backend propio todavía.** El login usa `FakeAuthRepository`; el registro y la sesión viven en memoria. La bóveda, el cambio de contraseña maestra y la eliminación de cuenta quedan para `26.3.1`.
+- **No hay backend propio todavía.** El login usa `FakeAuthRepository`; el registro y la sesión viven en memoria. El contrato que debe cumplir la API está en [BACKEND.md](BACKEND.md). La bóveda, el cambio de contraseña maestra y la eliminación de cuenta quedan para `26.3.1`.
 - La verificación de URLs es **heurística local** (`UrlAnalyzer`), no un servicio de reputación. Safe Browsing requiere un proxy en el backend y está pendiente.
 - La pestaña inferior «Bóveda» se sustituyó temporalmente por «Brechas» para esta entrega; se restaura cuando exista la bóveda.
 - El score del Inicio se calcula solo con escaneos; la parte de fortaleza de contraseñas de la bóveda llegará con ella.
@@ -157,6 +157,7 @@ Resultado de la última verificación: **71 pruebas, 0 fallos** y **lint 0 error
 ## Documentación
 
 - [Reporte técnico (HTML)](docs/REPORTE_TECNICO.html) · [PDF](docs/REPORTE_TECNICO.pdf)
+- [Contrato del backend](BACKEND.md)
 - [Diseño y tokens](DESIGN.md)
 - [Reglas del proyecto](AGENTS.md)
 
