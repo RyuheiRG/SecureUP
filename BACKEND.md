@@ -1,9 +1,9 @@
 # BACKEND.md — Contrato y guía del backend de SecureUP
 
-> **Estado:** propuesta inicial, 2026-11-09.
-> **Alcance:** este documento describe el backend que la app Android necesita. El código vivirá en un repositorio aparte; este archivo se queda en el repo de la app como contrato compartido hasta que exista ese repositorio, y después se mueve allí dejando aquí un enlace.
+> **Estado:** copia de referencia, 2026-11-12. La versión canónica vive en el repositorio del backend (`secureup-backend`); si las dos difieren, manda esa.
+> **Alcance:** contrato de la API REST que esta app consume, para que el equipo conozca qué esperar y los DTOs no cambien sin aviso.
 >
-> **Fuente de verdad:** `AGENTS.md` §6 (seguridad) y §7 (diseño criptográfico y de API). Si este documento contradice `AGENTS.md`, gana `AGENTS.md` y hay que corregir este archivo.
+> **Fuente de verdad del lado app:** `AGENTS.md` §6 (seguridad) y §7 (diseño criptográfico y de API). Si el contrato canónico contradice `AGENTS.md`, hay que corregir el contrato y avisar al equipo del backend.
 >
 > **Este archivo no contiene secretos.** La API key de Safe Browsing, el secreto JWT y la contraseña de la base van en variables de entorno del servidor. Si alguna vez pegas una clave real aquí o en cualquier archivo del repo, **rótala de inmediato** en Google Cloud.
 
